@@ -44,6 +44,26 @@ class Game {
     clearInterval(this.interval);
     this.interval = null;
   };
+
+  getBarriers = () => {
+    const barriers = [];
+    this._matrix.forEach((row, i) => {
+      row.forEach((item, j) => {
+        if (item === OBJECTS.BARRIER) {
+          barriers.push({
+            x: j,
+            y: i,
+            hasBarrierAbove: this._matrix[i - 1]?.[j] === OBJECTS.BARRIER,
+            hasBarrierBelow: this._matrix[i + 1]?.[j] === OBJECTS.BARRIER,
+            hasBarrierLeft: this._matrix[i]?.[j - 1] === OBJECTS.BARRIER,
+            hasBarrierRight: this._matrix[i]?.[j + 1] === OBJECTS.BARRIER,
+          });
+        }
+      });
+    });
+
+    return barriers;
+  };
 }
 
 const OBJECTS = Object.freeze({
