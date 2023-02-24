@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project tester site</title>
+    <script src="Game.js"></script>
+  </head>
+  <body>
+    <div id="board" style="position: relative; width: 400px; height: 300px">
+      <span
+        id="player"
+        style="position: absolute; height: 10px; font-size: 10px"
+        >.</span
+      >
+    </div>
+    <script>
+      const game = new Game();
+      game.startGame();
+
+      const player = document.getElementById("player");
+
+      const board = document.getElementById("board");
+      game.getBarriers().forEach((barrier) => {
+        const newBlock = document.createElement("div");
+        newBlock.style.width = "10px";
+        newBlock.style.height = "10px";
+        newBlock.style.position = "absolute";
+        newBlock.style.left = `${barrier.x * 10}px`;
+        newBlock.style.top = `${(game._matrix.length - 1 - barrier.y) * 10}px`;
+        newBlock.style.backgroundColor = "black";
+
+        board.appendChild(newBlock);
+      });
+
+      setInterval(() => {
+        player.style.left = `${game._pacman.position.j * 10}px`;
+        player.style.top = `${game._pacman.position.i * 10}px`;
+      }, 20);
+
+      document.addEventListener("keydown", (e) => {
+        switch (e.code) {
+          case "ArrowDown":
+            game.handleChangeIntendedDirection(DIRECTIONS.DOWN);
+            break;
+          case "ArrowUp":
+            game.handleChangeIntendedDirection(DIRECTIONS.UP);
+            break;
+          case "ArrowRight":
+            game.handleChangeIntendedDirection(DIRECTIONS.RIGHT);
+            break;
+          case "ArrowLeft":
+            game.handleChangeIntendedDirection(DIRECTIONS.LEFT);
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>
