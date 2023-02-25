@@ -34,6 +34,7 @@
         >G</span
       >
     </div>
+    <span id="z">0</span>
     <script>
       const game = new Game();
 
@@ -43,6 +44,7 @@
       );
 
       const board = document.getElementById("board");
+      const pacmanZPosition = document.getElementById("z");
       game.getBarriers().forEach((barrier) => {
         const newBlock = document.createElement("div");
         newBlock.style.width = "10px";
@@ -58,7 +60,9 @@
       const pellets = [];
       setInterval(() => {
         player.style.left = `${game._pacman.position.j * 10}px`;
-        player.style.top = `${game._pacman.position.i * 10}px`;
+        player.style.top = `${
+          (game._pacman.position.i - game._pacman.position.z) * 10
+        }px`;
 
         game.getGhosts().forEach((ghost, i) => {
           const ghostElement = ghosts[i];
@@ -84,6 +88,10 @@
           board.appendChild(pelletNode);
           pellets.push(pelletNode);
         });
+
+        pacmanZPosition.innerText = `position: ${
+          game.getPacman().position.z
+        }, velocity: ${game.getPacman().zVelocity}`;
       }, 20);
 
       let isGameStarted = false;
@@ -104,6 +112,9 @@
             break;
           case "ArrowLeft":
             game.handleChangeIntendedDirection(DIRECTIONS.LEFT);
+            break;
+          case "Space":
+            game.handleJumpPressed();
             break;
         }
       });

@@ -5,6 +5,8 @@ class Game {
     ghostBlocksPerSecondSpeed = 3,
     pacmanHitboxRadius = 0.5,
     ghostHitboxRadius = 0.5,
+    gravityAccelleration = -12,
+    jumpInitialVelocity = 6,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
 
@@ -28,6 +30,9 @@ class Game {
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
+
+    this._GRAVITY_ACCELERATION = gravityAccelleration;
+    this._JUMP_INITIAL_VELOCITY = jumpInitialVelocity;
   }
 
   startGame = () => {
@@ -44,7 +49,7 @@ class Game {
     this.interval = null;
   };
 
-  _getEntityUpdatedPositionAndDirection({
+  _getEntityUpdatedXYPositionAndDirection({
     movementDirection,
     currentPosition,
     pickFromPossibleDirectionsOnNewBlock,
@@ -57,13 +62,13 @@ class Game {
     };
     let nextDirection = movementDirection;
 
-    const isPacmanEnteringNewBlock =
+    const isEnteringNewBlock =
       Math.floor(currentPosition.i) !== Math.floor(nextPosition.i) ||
       Math.floor(currentPosition.j) !== Math.floor(nextPosition.j) ||
       Math.ceil(currentPosition.i) !== Math.ceil(nextPosition.i) ||
       Math.ceil(currentPosition.j) !== Math.ceil(nextPosition.j);
 
-    if (isPacmanEnteringNewBlock) {
+    if (isEnteringNewBlock) {
       const discreteI = Math.round(currentPosition.i);
       const discreteJ = Math.round(currentPosition.j);
 
@@ -84,7 +89,7 @@ class Game {
 
       if (!possibleDirectionsAtCrossroads.includes(nextDirection)) {
         throw new Error(
-          "in _getEntityUpdatedPositionAndDirection: invalid direction picked from pickFromPossibleDirectionsOnNewBlock"
+          "in _getEntityUpdatedXYPositionAndDirection: invalid direction picked from pickFromPossibleDirectionsOnNewBlock"
         );
       }
     }
@@ -92,10 +97,10 @@ class Game {
   }
 
   _handleRefresh = () => {
-    // UPDATING PACMAN POSITION
+    // UPDATING PACMAN XY POSITION
 
     const [nextPosition, nextDirection] =
-      this._getEntityUpdatedPositionAndDirection({
+      this._getEntityUpdatedXYPositionAndDirection({
         movementDirection: this._pacman.movementDirection,
         currentPosition: this._pacman.position,
         movementAmount: this._PACMAN_MOVEMENT_PER_REFRESH,
@@ -114,10 +119,20 @@ class Game {
     this._pacman.movementDirection = nextDirection;
     this._pacman.position = nextPosition;
 
+    // UPDATING PACMAN Z POSITION
+
+    const deltaT = this._GAME_STATE_REFRESH_MS / 1000;
+    const newZVelocity =
+      this._pacman.zVelocity + this._GRAVITY_ACCELERATION * deltaT;
+    const deltaZ = ((newZVelocity + this._pacman.zVelocity) / 2) * deltaT;
+    const newZ = Math.max(0, this._pacman.position.z + deltaZ);
+    this._pacman.zVelocity = newZ === 0 ? 0 : newZVelocity;
+    this._pacman.position.z = newZ;
+
     // UPDATING GHOST POSITIONS
     this._ghosts.forEach((ghost) => {
       const [nextPosition, nextDirection] =
-        this._getEntityUpdatedPositionAndDirection({
+        this._getEntityUpdatedXYPositionAndDirection({
           movementDirection: ghost.movementDirection,
           currentPosition: ghost.position,
           movementAmount: this._GHOST_MOVEMENT_PER_REFRESH,
@@ -175,7 +190,8 @@ class Game {
     this._ghosts.forEach((ghost) => {
       const euclideanDistanceFromPacman = Math.sqrt(
         Math.pow(ghost.position.i - this._pacman.position.i, 2) +
-          Math.pow(ghost.position.j - this._pacman.position.j, 2)
+          Math.pow(ghost.position.j - this._pacman.position.j, 2) +
+          Math.pow(ghost.position.z - this._pacman.position.z, 2)
       );
       const isColliding =
         euclideanDistanceFromPacman <=
@@ -267,9 +283,16 @@ class Game {
         j: 1,
         z: 0,
       },
+      zVelocity: 0,
       movementDirection: DIRECTIONS.NONE,
       intendedDirection: DIRECTIONS.NONE,
     };
+  };
+
+  handleJumpPressed = () => {
+    if (this._pacman.position.z === 0) {
+      this._pacman.zVelocity = this._JUMP_INITIAL_VELOCITY;
+    }
   };
 
   _placeGhostsInStartingPosition = () => {
