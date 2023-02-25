@@ -13,12 +13,34 @@
         style="position: absolute; height: 10px; font-size: 10px"
         >.</span
       >
+      <span
+        id="ghost1"
+        style="position: absolute; height: 10px; font-size: 10px"
+        >.</span
+      >
+      <span
+        id="ghost2"
+        style="position: absolute; height: 10px; font-size: 10px"
+        >.</span
+      >
+      <span
+        id="ghost3"
+        style="position: absolute; height: 10px; font-size: 10px"
+        >.</span
+      >
+      <span
+        id="ghost4"
+        style="position: absolute; height: 10px; font-size: 10px"
+        >.</span
+      >
     </div>
     <script>
       const game = new Game();
-      game.startGame();
 
       const player = document.getElementById("player");
+      const ghosts = [1, 2, 3, 4].map((num) =>
+        document.getElementById(`ghost${num}`)
+      );
 
       const board = document.getElementById("board");
       game.getBarriers().forEach((barrier) => {
@@ -36,9 +58,20 @@
       setInterval(() => {
         player.style.left = `${game._pacman.position.j * 10}px`;
         player.style.top = `${game._pacman.position.i * 10}px`;
+
+        game.getGhosts().forEach((ghost, i) => {
+          const ghostElement = ghosts[i];
+          ghostElement.style.left = `${ghost.position.j * 10}px`;
+          ghostElement.style.top = `${ghost.position.i * 10}px`;
+        });
       }, 20);
 
+      let isGameStarted = false;
       document.addEventListener("keydown", (e) => {
+        if (!isGameStarted) {
+          game.startGame();
+          isGameStarted = true;
+        }
         switch (e.code) {
           case "ArrowDown":
             game.handleChangeIntendedDirection(DIRECTIONS.DOWN);

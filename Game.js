@@ -5,11 +5,14 @@ class Game {
     ghostBlocksPerSecondSpeed = 2,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
+
     const pacmanBlocksPerMillisecond = pacmanBlocksPerSecondSpeed / 1000;
     this._PACMAN_MOVEMENT_PER_REFRESH =
       pacmanBlocksPerMillisecond * this._GAME_STATE_REFRESH_MS;
 
-    this._GHOST_MOVEMENT_PER_REFRESH = ghostBlocksPerSecondSpeed / 1000;
+    const ghostBlocksPerMillisecond = ghostBlocksPerSecondSpeed / 1000;
+    this._GHOST_MOVEMENT_PER_REFRESH =
+      ghostBlocksPerMillisecond * this._GAME_STATE_REFRESH_MS;
 
     this._interval = null;
 
@@ -22,6 +25,40 @@ class Game {
       movementDirection: DIRECTIONS.NONE,
       intendedDirection: DIRECTIONS.NONE,
     };
+    this._ghosts = [
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+    ];
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
@@ -44,7 +81,7 @@ class Game {
   _getEntityUpdatedPositionAndDirection({
     movementDirection,
     currentPosition,
-    pickFromPossibleDirectionsOnCrossroads,
+    pickFromPossibleDirectionsOnNewBlock,
     movementAmount,
   }) {
     const nextPosition = {
@@ -73,7 +110,7 @@ class Game {
         (d) =>
           this._matrix[discreteI + d.i]?.[discreteJ + d.j] !== OBJECTS.BARRIER
       );
-      nextDirection = pickFromPossibleDirectionsOnCrossroads(
+      nextDirection = pickFromPossibleDirectionsOnNewBlock(
         possibleDirectionsAtCrossroads
       );
       nextPosition.i = discreteI + movementRemaining * nextDirection.i;
@@ -81,7 +118,7 @@ class Game {
 
       if (!possibleDirectionsAtCrossroads.includes(nextDirection)) {
         throw new Error(
-          "in _getEntityUpdatedPositionAndDirection: invalid direction picked from pickFromPossibleDirectionsOnCrossroads"
+          "in _getEntityUpdatedPositionAndDirection: invalid direction picked from pickFromPossibleDirectionsOnNewBlock"
         );
       }
     }
@@ -89,15 +126,14 @@ class Game {
   }
 
   _handleRefresh = () => {
-    // HANDLE PACMAN MOVEMENT
+    // UPDATING PACMAN POSITION
 
     const [nextPosition, nextDirection] =
       this._getEntityUpdatedPositionAndDirection({
         movementDirection: this._pacman.movementDirection,
         currentPosition: this._pacman.position,
         movementAmount: this._PACMAN_MOVEMENT_PER_REFRESH,
-        pickFromPossibleDirectionsOnCrossroads: (possibleDirections) => {
-          console.log(possibleDirections);
+        pickFromPossibleDirectionsOnNewBlock: (possibleDirections) => {
           if (possibleDirections.includes(this._pacman.intendedDirection)) {
             this._pacman.movementDirection = this._pacman.intendedDirection;
             return this._pacman.intendedDirection;
@@ -111,6 +147,63 @@ class Game {
       });
     this._pacman.movementDirection = nextDirection;
     this._pacman.position = nextPosition;
+
+    // UPDATING GHOST POSITIONS
+    this._ghosts.forEach((ghost) => {
+      const [nextPosition, nextDirection] =
+        this._getEntityUpdatedPositionAndDirection({
+          movementDirection: ghost.movementDirection,
+          currentPosition: ghost.position,
+          movementAmount: this._GHOST_MOVEMENT_PER_REFRESH,
+          pickFromPossibleDirectionsOnNewBlock: (possibleDirections) => {
+            if (possibleDirections.length === 2) {
+              // NONE is always included.
+              return possibleDirections.find(
+                (direction) => direction !== DIRECTIONS.NONE
+              );
+            }
+
+            // Either forward or 90 degree turns
+            const possibleNonReversingNonStationaryDirections =
+              possibleDirections.filter((direction) => {
+                const isStationary = direction === DIRECTIONS.NONE;
+                const isOppositeDirection =
+                  direction.i === -ghost.movementDirection.i &&
+                  direction.j === -ghost.movementDirection.j;
+                return !isOppositeDirection && !isStationary;
+              });
+
+            const randomIndex = Math.floor(
+              Math.random() * possibleNonReversingNonStationaryDirections.length
+            );
+            return possibleNonReversingNonStationaryDirections[randomIndex];
+          },
+        });
+      ghost.position = nextPosition;
+      ghost.movementDirection = nextDirection;
+
+      // EATING UP PELLETS
+      if (
+        this._matrix[Math.floor(this._pacman.position.i)]?.[
+          Math.floor(this._pacman.position.j)
+        ] === OBJECTS.PELLET
+      ) {
+        this._matrix[Math.floor(this._pacman.position.i)][
+          Math.floor(this._pacman.position.j)
+        ] = OBJECTS.EMPTY;
+        // TODO: Update score after eating pellet
+      }
+      if (
+        this._matrix[Math.ceil(this._pacman.position.i)]?.[
+          Math.ceil(this._pacman.position.j)
+        ] === OBJECTS.PELLET
+      ) {
+        this._matrix[Math.ceil(this._pacman.position.i)][
+          Math.ceil(this._pacman.position.j)
+        ] = OBJECTS.EMPTY;
+        // TODO: Update score after eating pellet
+      }
+    });
   };
 
   _getXfromJ = (j) => {
@@ -142,6 +235,30 @@ class Game {
     return barriers;
   };
 
+  getPellets = () => {
+    const pellets = [];
+    this._matrix.forEach((row, i) => {
+      row.forEach((item, j) => {
+        if (item === OBJECTS.PELLET) {
+          pellets.push({
+            x: this._getXfromJ(j),
+            y: this._getYfromI(i),
+            z: 0,
+          });
+        }
+      });
+    });
+    return pellets;
+  };
+
+  getPacman = () => {
+    return this._pacman;
+  };
+
+  getGhosts = () => {
+    return this._ghosts;
+  };
+
   handleChangeIntendedDirection = (direction) => {
     if (!Object.values(DIRECTIONS).includes(direction)) {
       throw new Error(
@@ -166,7 +283,7 @@ class Game {
 const OBJECTS = Object.freeze({
   EMPTY: 0,
   BARRIER: 1,
-  FOOD: 2,
+  PELLET: 2,
   POWER_UP: 3,
 });
 
@@ -182,95 +299,95 @@ const INITIAL_MATRIX = [
   new Array(28).fill(OBJECTS.BARRIER),
   [
     OBJECTS.BARRIER,
-    ...new Array(12).fill(OBJECTS.FOOD),
+    ...new Array(12).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(12).fill(OBJECTS.FOOD),
+    ...new Array(12).fill(OBJECTS.PELLET),
     OBJECTS.BARRIER,
   ],
   [
     OBJECTS.BARRIER,
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     OBJECTS.BARRIER,
   ],
   [
     OBJECTS.BARRIER,
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     OBJECTS.BARRIER,
   ],
   [
     OBJECTS.BARRIER,
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     OBJECTS.BARRIER,
   ],
 
-  [OBJECTS.BARRIER, ...new Array(26).fill(OBJECTS.FOOD), OBJECTS.BARRIER],
+  [OBJECTS.BARRIER, ...new Array(26).fill(OBJECTS.PELLET), OBJECTS.BARRIER],
 
   [
     OBJECTS.BARRIER,
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(8).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(4).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     OBJECTS.BARRIER,
   ],
 
   [
     OBJECTS.BARRIER,
-    ...new Array(6).fill(OBJECTS.FOOD),
+    ...new Array(6).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(4).fill(OBJECTS.FOOD),
+    ...new Array(4).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(4).fill(OBJECTS.FOOD),
+    ...new Array(4).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(6).fill(OBJECTS.FOOD),
+    ...new Array(6).fill(OBJECTS.PELLET),
     OBJECTS.BARRIER,
   ],
   [
     ...new Array(6).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(2).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(5).fill(OBJECTS.BARRIER),
-    OBJECTS.FOOD,
+    OBJECTS.PELLET,
     ...new Array(6).fill(OBJECTS.BARRIER),
   ],
   new Array(28).fill(OBJECTS.BARRIER),
