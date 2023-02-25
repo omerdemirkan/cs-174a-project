@@ -41,63 +41,76 @@ class Game {
     this.interval = null;
   };
 
+  _getEntityUpdatedPositionAndDirection({
+    movementDirection,
+    currentPosition,
+    pickFromPossibleDirectionsOnCrossroads,
+    movementAmount,
+  }) {
+    const nextPosition = {
+      i: currentPosition.i + movementAmount * movementDirection.i,
+      j: currentPosition.j + movementAmount * movementDirection.j,
+      z: currentPosition.z,
+    };
+    let nextDirection = movementDirection;
+
+    const isPacmanEnteringNewBlock =
+      Math.floor(currentPosition.i) !== Math.floor(nextPosition.i) ||
+      Math.floor(currentPosition.j) !== Math.floor(nextPosition.j) ||
+      Math.ceil(currentPosition.i) !== Math.ceil(nextPosition.i) ||
+      Math.ceil(currentPosition.j) !== Math.ceil(nextPosition.j);
+
+    if (isPacmanEnteringNewBlock) {
+      const discreteI = Math.round(currentPosition.i);
+      const discreteJ = Math.round(currentPosition.j);
+
+      const amountMoved =
+        Math.abs(currentPosition.i - discreteI) +
+        Math.abs(currentPosition.j - discreteJ);
+      const movementRemaining = movementAmount - amountMoved;
+
+      const possibleDirectionsAtCrossroads = Object.values(DIRECTIONS).filter(
+        (d) =>
+          this._matrix[discreteI + d.i]?.[discreteJ + d.j] !== OBJECTS.BARRIER
+      );
+      nextDirection = pickFromPossibleDirectionsOnCrossroads(
+        possibleDirectionsAtCrossroads
+      );
+      nextPosition.i = discreteI + movementRemaining * nextDirection.i;
+      nextPosition.j = discreteJ + movementRemaining * nextDirection.j;
+
+      if (!possibleDirectionsAtCrossroads.includes(nextDirection)) {
+        throw new Error(
+          "in _getEntityUpdatedPositionAndDirection: invalid direction picked from pickFromPossibleDirectionsOnCrossroads"
+        );
+      }
+    }
+    return [nextPosition, nextDirection];
+  }
+
   _handleRefresh = () => {
     // HANDLE PACMAN MOVEMENT
 
-    const pacmanNextPosition = {
-      i:
-        this._pacman.position.i +
-        this._PACMAN_MOVEMENT_PER_REFRESH * this._pacman.movementDirection.i,
-      j:
-        this._pacman.position.j +
-        this._PACMAN_MOVEMENT_PER_REFRESH * this._pacman.movementDirection.j,
-      z: this._pacman.position.z,
-    };
-
-    const isPacmanEnteringNewBlock =
-      Math.floor(this._pacman.position.i) !==
-        Math.floor(pacmanNextPosition.i) ||
-      Math.floor(this._pacman.position.j) !==
-        Math.floor(pacmanNextPosition.j) ||
-      Math.ceil(this._pacman.position.i) !== Math.ceil(pacmanNextPosition.i) ||
-      Math.ceil(this._pacman.position.j) !== Math.ceil(pacmanNextPosition.j);
-
-    if (isPacmanEnteringNewBlock) {
-      const discreteI = Math.round(this._pacman.position.i);
-      const discreteJ = Math.round(this._pacman.position.j);
-
-      const isIntendingToTurn =
-        this._pacman.movementDirection !== this._pacman.intendedDirection;
-
-      const isMovingInIntendedDirectionPossible =
-        this._matrix[discreteI + this._pacman.intendedDirection.i]?.[
-          discreteJ + this._pacman.intendedDirection.j
-        ] !== OBJECTS.BARRIER;
-
-      const isTurning =
-        isIntendingToTurn && isMovingInIntendedDirectionPossible;
-
-      const isPacmanWalkingIntoAWall =
-        this._matrix[Math.floor(pacmanNextPosition.i)]?.[
-          Math.floor(pacmanNextPosition.j)
-        ] === OBJECTS.BARRIER ||
-        this._matrix[Math.ceil(pacmanNextPosition.i)]?.[
-          Math.ceil(pacmanNextPosition.j)
-        ] === OBJECTS.BARRIER;
-
-      if (isTurning) {
-        this._pacman.movementDirection = this._pacman.intendedDirection;
-        pacmanNextPosition.i = discreteI;
-        pacmanNextPosition.j = discreteJ;
-      } else if (isPacmanWalkingIntoAWall) {
-        // Places pacman up against the wall.
-        // This is assuming a short game tick!
-        pacmanNextPosition.i = discreteI;
-        pacmanNextPosition.j = discreteJ;
-      }
-    }
-
-    this._pacman.position = pacmanNextPosition;
+    const [nextPosition, nextDirection] =
+      this._getEntityUpdatedPositionAndDirection({
+        movementDirection: this._pacman.movementDirection,
+        currentPosition: this._pacman.position,
+        movementAmount: this._PACMAN_MOVEMENT_PER_REFRESH,
+        pickFromPossibleDirectionsOnCrossroads: (possibleDirections) => {
+          console.log(possibleDirections);
+          if (possibleDirections.includes(this._pacman.intendedDirection)) {
+            this._pacman.movementDirection = this._pacman.intendedDirection;
+            return this._pacman.intendedDirection;
+          } else if (
+            possibleDirections.includes(this._pacman.movementDirection)
+          ) {
+            return this._pacman.movementDirection;
+          }
+          return DIRECTIONS.NONE;
+        },
+      });
+    this._pacman.movementDirection = nextDirection;
+    this._pacman.position = nextPosition;
   };
 
   _getXfromJ = (j) => {
