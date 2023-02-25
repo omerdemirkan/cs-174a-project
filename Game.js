@@ -1,8 +1,10 @@
 class Game {
   constructor({
     gameStateRefreshRate = 60,
-    pacmanBlocksPerSecondSpeed = 3,
-    ghostBlocksPerSecondSpeed = 2,
+    pacmanBlocksPerSecondSpeed = 4,
+    ghostBlocksPerSecondSpeed = 3,
+    pacmanHitboxRadius = 0.5,
+    ghostHitboxRadius = 0.5,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
 
@@ -14,51 +16,15 @@ class Game {
     this._GHOST_MOVEMENT_PER_REFRESH =
       ghostBlocksPerMillisecond * this._GAME_STATE_REFRESH_MS;
 
+    this._PACMAN_HITBOX_RADIUS = pacmanHitboxRadius;
+    this._GHOST_HITBOX_RADIUS = ghostHitboxRadius;
+
+    // Stores result of setInterval, which we need to
+    // pass into clearInterval on pauseGame.
     this._interval = null;
 
-    this._pacman = {
-      position: {
-        i: 1,
-        j: 1,
-        z: 0,
-      },
-      movementDirection: DIRECTIONS.NONE,
-      intendedDirection: DIRECTIONS.NONE,
-    };
-    this._ghosts = [
-      {
-        position: {
-          i: 1,
-          j: 24,
-          z: 0,
-        },
-        movementDirection: DIRECTIONS.RIGHT,
-      },
-      {
-        position: {
-          i: 1,
-          j: 24,
-          z: 0,
-        },
-        movementDirection: DIRECTIONS.RIGHT,
-      },
-      {
-        position: {
-          i: 1,
-          j: 24,
-          z: 0,
-        },
-        movementDirection: DIRECTIONS.RIGHT,
-      },
-      {
-        position: {
-          i: 1,
-          j: 24,
-          z: 0,
-        },
-        movementDirection: DIRECTIONS.RIGHT,
-      },
-    ];
+    this._placePacmanInStartingPosition();
+    this._placeGhostsInStartingPosition();
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
@@ -181,27 +147,42 @@ class Game {
         });
       ghost.position = nextPosition;
       ghost.movementDirection = nextDirection;
+    });
 
-      // EATING UP PELLETS
-      if (
-        this._matrix[Math.floor(this._pacman.position.i)]?.[
-          Math.floor(this._pacman.position.j)
-        ] === OBJECTS.PELLET
-      ) {
-        this._matrix[Math.floor(this._pacman.position.i)][
-          Math.floor(this._pacman.position.j)
-        ] = OBJECTS.EMPTY;
-        // TODO: Update score after eating pellet
-      }
-      if (
-        this._matrix[Math.ceil(this._pacman.position.i)]?.[
-          Math.ceil(this._pacman.position.j)
-        ] === OBJECTS.PELLET
-      ) {
-        this._matrix[Math.ceil(this._pacman.position.i)][
-          Math.ceil(this._pacman.position.j)
-        ] = OBJECTS.EMPTY;
-        // TODO: Update score after eating pellet
+    // EATING UP PELLETS
+    if (
+      this._matrix[Math.floor(this._pacman.position.i)]?.[
+        Math.floor(this._pacman.position.j)
+      ] === OBJECTS.PELLET
+    ) {
+      this._matrix[Math.floor(this._pacman.position.i)][
+        Math.floor(this._pacman.position.j)
+      ] = OBJECTS.EMPTY;
+      // TODO: Update score after eating pellet
+    }
+    if (
+      this._matrix[Math.ceil(this._pacman.position.i)]?.[
+        Math.ceil(this._pacman.position.j)
+      ] === OBJECTS.PELLET
+    ) {
+      this._matrix[Math.ceil(this._pacman.position.i)][
+        Math.ceil(this._pacman.position.j)
+      ] = OBJECTS.EMPTY;
+      // TODO: Update score after eating pellet
+    }
+
+    // PACMAN-GHOST COLLISION DETECTION
+    this._ghosts.forEach((ghost) => {
+      const euclideanDistanceFromPacman = Math.sqrt(
+        Math.pow(ghost.position.i - this._pacman.position.i, 2) +
+          Math.pow(ghost.position.j - this._pacman.position.j, 2)
+      );
+      const isColliding =
+        euclideanDistanceFromPacman <=
+        this._PACMAN_HITBOX_RADIUS + this._GHOST_HITBOX_RADIUS;
+      if (isColliding) {
+        this._placePacmanInStartingPosition();
+        this._placeGhostsInStartingPosition();
       }
     });
   };
@@ -277,6 +258,55 @@ class Game {
     ) {
       this._pacman.movementDirection = direction;
     }
+  };
+
+  _placePacmanInStartingPosition = () => {
+    this._pacman = {
+      position: {
+        i: 1,
+        j: 1,
+        z: 0,
+      },
+      movementDirection: DIRECTIONS.NONE,
+      intendedDirection: DIRECTIONS.NONE,
+    };
+  };
+
+  _placeGhostsInStartingPosition = () => {
+    this._ghosts = [
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+      {
+        position: {
+          i: 1,
+          j: 24,
+          z: 0,
+        },
+        movementDirection: DIRECTIONS.RIGHT,
+      },
+    ];
   };
 }
 

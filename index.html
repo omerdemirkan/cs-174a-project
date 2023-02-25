@@ -11,27 +11,27 @@
       <span
         id="player"
         style="position: absolute; height: 10px; font-size: 10px"
-        >.</span
+        >P</span
       >
       <span
         id="ghost1"
         style="position: absolute; height: 10px; font-size: 10px"
-        >.</span
+        >G</span
       >
       <span
         id="ghost2"
         style="position: absolute; height: 10px; font-size: 10px"
-        >.</span
+        >G</span
       >
       <span
         id="ghost3"
         style="position: absolute; height: 10px; font-size: 10px"
-        >.</span
+        >G</span
       >
       <span
         id="ghost4"
         style="position: absolute; height: 10px; font-size: 10px"
-        >.</span
+        >G</span
       >
     </div>
     <script>
@@ -55,6 +55,7 @@
         board.appendChild(newBlock);
       });
 
+      const pellets = [];
       setInterval(() => {
         player.style.left = `${game._pacman.position.j * 10}px`;
         player.style.top = `${game._pacman.position.i * 10}px`;
@@ -63,6 +64,25 @@
           const ghostElement = ghosts[i];
           ghostElement.style.left = `${ghost.position.j * 10}px`;
           ghostElement.style.top = `${ghost.position.i * 10}px`;
+        });
+
+        while (pellets.length) {
+          pellets.pop().remove();
+        }
+        game.getPellets().forEach((pellet) => {
+          const pelletNode = document.createElement("span");
+          pelletNode.style.width = "10px";
+          pelletNode.style.height = "10px";
+          pelletNode.style.innerText = ".";
+          pelletNode.style.position = "absolute";
+          pelletNode.style.left = `${pellet.x * 10}px`;
+          pelletNode.style.top = `${
+            (game._matrix.length - 1 - pellet.y) * 10
+          }px`;
+          pelletNode.style.fontSize = "10px";
+          pelletNode.innerText = ".";
+          board.appendChild(pelletNode);
+          pellets.push(pelletNode);
         });
       }, 20);
 
