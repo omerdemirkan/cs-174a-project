@@ -1,123 +1,27 @@
+<!-- Graphics Example Code.  
+    index.html - The web page document containing the canvas (drawing surface).  It launches your JavaScript files.
+-->
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project tester site</title>
-    <script src="Game.js"></script>
-  </head>
-  <body>
-    <div id="board" style="position: relative; width: 400px; height: 300px">
-      <span
-        id="player"
-        style="position: absolute; height: 10px; font-size: 10px"
-        >P</span
-      >
-      <span
-        id="ghost1"
-        style="position: absolute; height: 10px; font-size: 10px"
-        >G</span
-      >
-      <span
-        id="ghost2"
-        style="position: absolute; height: 10px; font-size: 10px"
-        >G</span
-      >
-      <span
-        id="ghost3"
-        style="position: absolute; height: 10px; font-size: 10px"
-        >G</span
-      >
-      <span
-        id="ghost4"
-        style="position: absolute; height: 10px; font-size: 10px"
-        >G</span
-      >
-    </div>
-    <span id="z">0</span>
-    <script>
-      const game = new Game();
+<html lang="En">
+<head>
+    <meta charset="UTF-8"/>
+    <link href="assets/fav.ico" rel="icon">
+    <title>Tiny Graphics</title>
+</head>
+<body style="background: White">
+<!-- Begin typing your web page here. -->
+<!-- The following code embeds a WebGL canvas panel, loads certain scene(s), and displays panel(s) of their controls.-->
+<div class="canvas-widget" id="main-canvas"></div>
+<script type=module>
+    // ********************* THE ENTRY POINT OF YOUR WHOLE PROGRAM STARTS HERE *********************
+    // Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:
+    const element_to_replace = document.querySelector("#main-canvas");
+    import {Main_Scene, Additional_Scenes, Canvas_Widget} from './main-scene.js';
+    // Import the file that defines a scene.
+    const scenes = [Main_Scene, ...Additional_Scenes].map(scene => new scene());
+    // This line creates your scene.
+    new Canvas_Widget(element_to_replace, scenes);
+</script>
 
-      const player = document.getElementById("player");
-      const ghosts = [1, 2, 3, 4].map((num) =>
-        document.getElementById(`ghost${num}`)
-      );
-
-      const board = document.getElementById("board");
-      const pacmanZPosition = document.getElementById("z");
-      game.getBarriers().forEach((barrier) => {
-        const newBlock = document.createElement("div");
-        newBlock.style.width = "10px";
-        newBlock.style.height = "10px";
-        newBlock.style.position = "absolute";
-        newBlock.style.left = `${barrier.x * 10}px`;
-        newBlock.style.top = `${(game._matrix.length - 1 - barrier.y) * 10}px`;
-        newBlock.style.backgroundColor = "black";
-
-        board.appendChild(newBlock);
-      });
-
-      const pellets = [];
-      setInterval(() => {
-        player.style.left = `${game._pacman.position.j * 10}px`;
-        player.style.top = `${
-          (game._pacman.position.i - game._pacman.position.z) * 10
-        }px`;
-
-        game.getGhosts().forEach((ghost, i) => {
-          const ghostElement = ghosts[i];
-          ghostElement.style.left = `${ghost.position.j * 10}px`;
-          ghostElement.style.top = `${ghost.position.i * 10}px`;
-        });
-
-        while (pellets.length) {
-          pellets.pop().remove();
-        }
-        game.getPellets().forEach((pellet) => {
-          const pelletNode = document.createElement("span");
-          pelletNode.style.width = "10px";
-          pelletNode.style.height = "10px";
-          pelletNode.style.innerText = ".";
-          pelletNode.style.position = "absolute";
-          pelletNode.style.left = `${pellet.x * 10}px`;
-          pelletNode.style.top = `${
-            (game._matrix.length - 1 - pellet.y) * 10
-          }px`;
-          pelletNode.style.fontSize = "10px";
-          pelletNode.innerText = ".";
-          board.appendChild(pelletNode);
-          pellets.push(pelletNode);
-        });
-
-        pacmanZPosition.innerText = `position: ${
-          game.getPacman().position.z
-        }, velocity: ${game.getPacman().zVelocity}`;
-      }, 20);
-
-      let isGameStarted = false;
-      document.addEventListener("keydown", (e) => {
-        if (!isGameStarted) {
-          game.startGame();
-          isGameStarted = true;
-        }
-        switch (e.code) {
-          case "ArrowDown":
-            game.handleChangeIntendedDirection(DIRECTIONS.DOWN);
-            break;
-          case "ArrowUp":
-            game.handleChangeIntendedDirection(DIRECTIONS.UP);
-            break;
-          case "ArrowRight":
-            game.handleChangeIntendedDirection(DIRECTIONS.RIGHT);
-            break;
-          case "ArrowLeft":
-            game.handleChangeIntendedDirection(DIRECTIONS.LEFT);
-            break;
-          case "Space":
-            game.handleJumpPressed();
-            break;
-        }
-      });
-    </script>
-  </body>
+</body>
 </html>
