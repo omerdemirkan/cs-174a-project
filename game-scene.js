@@ -26,12 +26,12 @@ export class GameScene extends Scene {
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Up", ["i"], () => null);
+        this.key_triggered_button("Up", ["w"], () => null);
         this.new_line();
-        this.key_triggered_button("Left", ["j"], () => null);
-        this.key_triggered_button("Right", ["l"], () => null);
+        this.key_triggered_button("Left", ["a"], () => null);
+        this.key_triggered_button("Right", ["s"], () => null);
         this.new_line();
-        this.key_triggered_button("Down", ["k"], () => null);
+        this.key_triggered_button("Down", ["d"], () => null);
 
     }
 
