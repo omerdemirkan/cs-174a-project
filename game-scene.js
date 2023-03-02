@@ -130,9 +130,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2).times(
-          Mat4.scale(0.5, 0.5, 1)
-        ),
+        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2),
         this.materials.test.override({ color: hex_color("#ffffff") })
       );
     });
