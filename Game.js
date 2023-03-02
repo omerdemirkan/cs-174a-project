@@ -1,4 +1,4 @@
-class Game {
+export class Game {
   constructor({
     gameStateRefreshRate = 60,
     pacmanBlocksPerSecondSpeed = 4,
@@ -249,11 +249,25 @@ class Game {
   };
 
   getPacman = () => {
-    return this._pacman;
+    return {
+      ...this._pacman,
+      position: {
+        x: this._getXfromJ(this._pacman.position.j),
+        y: this._getYfromI(this._pacman.position.i),
+        z: this._pacman.position.z,
+      },
+    };
   };
 
   getGhosts = () => {
-    return this._ghosts;
+    return this._ghosts.map((ghost) => ({
+      ...ghost,
+      position: {
+        x: this._getXfromJ(ghost.position.j),
+        y: this._getYfromI(ghost.position.i),
+        z: 0,
+      },
+    }));
   };
 
   handleChangeIntendedDirection = (direction) => {
@@ -340,11 +354,11 @@ const OBJECTS = Object.freeze({
   POWER_UP: 3,
 });
 
-const DIRECTIONS = Object.freeze({
-  UP: Object.freeze({ j: 0, i: -1 }),
-  DOWN: Object.freeze({ j: 0, i: 1 }),
-  LEFT: Object.freeze({ j: -1, i: 0 }),
-  RIGHT: Object.freeze({ j: 1, i: 0 }),
+export const DIRECTIONS = Object.freeze({
+  UP: Object.freeze({ j: 0, i: -1, rotationAngleInRadians: Math.PI }),
+  DOWN: Object.freeze({ j: 0, i: 1, rotationAngleInRadians: Math.PI }),
+  LEFT: Object.freeze({ j: -1, i: 0, rotationAngleInRadians: Math.PI }),
+  RIGHT: Object.freeze({ j: 1, i: 0, rotationAngleInRadians: Math.PI }),
   NONE: Object.freeze({ j: 0, i: 0 }), // at the beginning, pacman doesn't have a direction.
 });
 
