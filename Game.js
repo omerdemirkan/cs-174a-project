@@ -221,7 +221,15 @@ export class Game {
             y: this._getYfromI(i),
             z: 0,
             hasBarrierAbove: this._matrix[i - 1]?.[j] === OBJECTS.BARRIER,
+            hasBarrierAboveLeft:
+              this._matrix[i - 1]?.[j - 1] === OBJECTS.BARRIER,
+            hasBarrierAboveRight:
+              this._matrix[i - 1]?.[j + 1] === OBJECTS.BARRIER,
             hasBarrierBelow: this._matrix[i + 1]?.[j] === OBJECTS.BARRIER,
+            hasBarrierBelowLeft:
+              this._matrix[i + 1]?.[j - 1] === OBJECTS.BARRIER,
+            hasBarrierBelowRight:
+              this._matrix[i + 1]?.[j + 1] === OBJECTS.BARRIER,
             hasBarrierLeft: this._matrix[i]?.[j - 1] === OBJECTS.BARRIER,
             hasBarrierRight: this._matrix[i]?.[j + 1] === OBJECTS.BARRIER,
           });
