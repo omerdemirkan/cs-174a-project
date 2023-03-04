@@ -7,6 +7,7 @@ export class Game {
     ghostHitboxRadius = 0.5,
     gravityAccelleration = -12,
     jumpInitialVelocity = 6,
+    directionAnnealingSpeed = 0.2,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
 
@@ -21,6 +22,11 @@ export class Game {
     this._PACMAN_HITBOX_RADIUS = pacmanHitboxRadius;
     this._GHOST_HITBOX_RADIUS = ghostHitboxRadius;
 
+    this._GRAVITY_ACCELERATION = gravityAccelleration;
+    this._JUMP_INITIAL_VELOCITY = jumpInitialVelocity;
+
+    this._DIRECTION_ANNEALING_SPEED = directionAnnealingSpeed;
+
     // Stores result of setInterval, which we need to
     // pass into clearInterval on pauseGame.
     this._interval = null;
@@ -30,9 +36,6 @@ export class Game {
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
-
-    this._GRAVITY_ACCELERATION = gravityAccelleration;
-    this._JUMP_INITIAL_VELOCITY = jumpInitialVelocity;
   }
 
   startGame = () => {
@@ -96,6 +99,26 @@ export class Game {
     return [nextPosition, nextDirection];
   }
 
+  _annealDirection({ gameDirection, visualDirection }) {
+    // For example, from (3/2)PI to 0.
+    const isTurnDirectionCrossingModulo =
+      Math.abs(gameDirection - visualDirection) > Math.PI;
+
+    if (isTurnDirectionCrossingModulo && gameDirection < visualDirection) {
+      gameDirection += 2 * Math.PI;
+    } else if (
+      isTurnDirectionCrossingModulo &&
+      gameDirection > visualDirection
+    ) {
+      visualDirection += 2 * Math.PI;
+    }
+
+    const annealedDirectionPreModulo =
+      this._DIRECTION_ANNEALING_SPEED * gameDirection +
+      (1 - this._DIRECTION_ANNEALING_SPEED) * visualDirection;
+    return annealedDirectionPreModulo % (2 * Math.PI);
+  }
+
   _handleRefresh = () => {
     // UPDATING PACMAN XY POSITION
 
@@ -118,6 +141,12 @@ export class Game {
       });
     this._pacman.movementDirection = nextDirection;
     this._pacman.position = nextPosition;
+
+    // UPDATING PACMAN DIRECTION
+    this._pacman.rotationAngleInRadians = this._annealDirection({
+      gameDirection: this._pacman.movementDirection.rotationAngleInRadians,
+      visualDirection: this._pacman.rotationAngleInRadians,
+    });
 
     // UPDATING PACMAN Z POSITION
 
@@ -162,6 +191,11 @@ export class Game {
         });
       ghost.position = nextPosition;
       ghost.movementDirection = nextDirection;
+
+      ghost.rotationAngleInRadians = this._annealDirection({
+        gameDirection: ghost.movementDirection.rotationAngleInRadians,
+        visualDirection: ghost.rotationAngleInRadians,
+      });
     });
 
     // EATING UP PELLETS
@@ -308,6 +342,7 @@ export class Game {
       zVelocity: 0,
       movementDirection: DIRECTIONS.NONE,
       intendedDirection: DIRECTIONS.NONE,
+      rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
     };
   };
 
@@ -326,6 +361,7 @@ export class Game {
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
+        rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
       },
       {
         position: {
@@ -334,6 +370,7 @@ export class Game {
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
+        rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
       },
       {
         position: {
@@ -342,6 +379,7 @@ export class Game {
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
+        rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
       },
       {
         position: {
@@ -350,6 +388,7 @@ export class Game {
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
+        rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
       },
     ];
   };
@@ -364,10 +403,10 @@ const OBJECTS = Object.freeze({
 
 export const DIRECTIONS = Object.freeze({
   UP: Object.freeze({ j: 0, i: -1, rotationAngleInRadians: Math.PI }),
-  DOWN: Object.freeze({ j: 0, i: 1, rotationAngleInRadians: Math.PI }),
-  LEFT: Object.freeze({ j: -1, i: 0, rotationAngleInRadians: Math.PI }),
-  RIGHT: Object.freeze({ j: 1, i: 0, rotationAngleInRadians: Math.PI }),
-  NONE: Object.freeze({ j: 0, i: 0 }), // at the beginning, pacman doesn't have a direction.
+  DOWN: Object.freeze({ j: 0, i: 1, rotationAngleInRadians: 0 }),
+  LEFT: Object.freeze({ j: -1, i: 0, rotationAngleInRadians: 1.5 * Math.PI }),
+  RIGHT: Object.freeze({ j: 1, i: 0, rotationAngleInRadians: 0.5 * Math.PI }),
+  NONE: Object.freeze({ j: 0, i: 0, rotationAngleInRadians: 0 }), // at the beginning, pacman doesn't have a direction.
 });
 
 const INITIAL_MATRIX = [
