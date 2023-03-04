@@ -301,6 +301,14 @@ export class Game {
     };
   };
 
+  getBoardCenterPosition = () => {
+    return {
+      x: this._getXfromJ(this._matrix[0].length / 2),
+      y: this._getYfromI(this._matrix.length / 2),
+      z: 0,
+    };
+  };
+
   getGhosts = () => {
     return this._ghosts.map((ghost) => ({
       ...ghost,
