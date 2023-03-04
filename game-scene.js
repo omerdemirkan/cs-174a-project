@@ -54,6 +54,9 @@ export class GameScene extends Scene {
       vec3(0, 1, 0)
     );
     this.game = new Game();
+
+    this.CAMERA_ANNEAL_SPEED = 0.1; // Lower = smoother camera movement
+    this.PACMAN_CAMERA_WEIGHT = 0.3; // Lower = camera tracks pacman more.
   }
 
   make_control_panel() {
@@ -166,7 +169,9 @@ export class GameScene extends Scene {
             Mat4.translation((x + x_mod) * 2, (y + y_mod) * 2, z).times(
               Mat4.scale(1 / 3, 1 / 3, 1)
             ),
-            this.materials.wall_mat.override({ color: this.color_algo(hex, i, j) })
+            this.materials.wall_mat.override({
+              color: this.color_algo(hex, i, j),
+            })
           );
         }
         y_mod += 1 / 3;
@@ -177,15 +182,7 @@ export class GameScene extends Scene {
 
   display(context, program_state) {
     super.display(context, program_state);
-    // display():  Called once per frame of animation.
-    // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
-    if (!context.scratchpad.controls) {
-      this.children.push(
-        (context.scratchpad.controls = new defs.Movement_Controls())
-      );
-      // Define the global camera and projection matrices, which are stored in program_state.
-      program_state.set_camera(this.initial_camera_location);
-    }
+    const playerState = this.game.getPacman();
 
     program_state.projection_transform = Mat4.perspective(
       Math.PI / 4,
@@ -193,7 +190,36 @@ export class GameScene extends Scene {
       0.1,
       1000
     );
-    const playerState = this.game.getPacman();
+
+    const futureCameraX =
+      this.PACMAN_CAMERA_WEIGHT * playerState.position.x +
+      (1 - this.PACMAN_CAMERA_WEIGHT) * this.game.getBoardCenterPosition().x;
+    const futureCameraY =
+      this.PACMAN_CAMERA_WEIGHT * playerState.position.y +
+      (1 - this.PACMAN_CAMERA_WEIGHT) * this.game.getBoardCenterPosition().y;
+
+    if (!this.currentCameraX) {
+      this.currentCameraX = futureCameraX;
+      this.currentCameraY = futureCameraY;
+    }
+
+    this.currentCameraX =
+      this.CAMERA_ANNEAL_SPEED * futureCameraX +
+      (1 - this.CAMERA_ANNEAL_SPEED) * this.currentCameraX;
+    this.currentCameraY =
+      this.CAMERA_ANNEAL_SPEED * futureCameraY +
+      (1 - this.CAMERA_ANNEAL_SPEED) * this.currentCameraY;
+
+    const wsToEsTransformation = Mat4.translation(
+      // Sorry for these magic numbers, they just seem to work with
+      // the camera angle.
+      this.currentCameraX + 12,
+      this.currentCameraY - 38,
+      50
+    ).times(Mat4.rotation(0.7, 1, 0, 0));
+
+    program_state.set_camera(Mat4.inverse(wsToEsTransformation));
+
     const yellow = hex_color("#fac91a");
     const colors = ["#FF0000", "#FFC0CB", "#0000FF", "#FFA500"];
     let player_light = vec4(
