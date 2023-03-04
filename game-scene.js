@@ -162,7 +162,7 @@ export class GameScene extends Scene {
         playerState.position.x * 2,
         playerState.position.y * 2,
         playerState.position.z * 2
-      ),
+      ).times(Mat4.rotation(playerState.rotationAngleInRadians, 0, 0, 1)),
       this.materials.test.override({ color: yellow })
     );
 
@@ -175,7 +175,7 @@ export class GameScene extends Scene {
           ghost.position.x * 2,
           ghost.position.y * 2,
           ghost.position.z * 2
-        ),
+        ).times(Mat4.rotation(ghost.rotationAngleInRadians, 0, 0, 1)),
         this.materials.test.override({ color: hex_color(colors[index]) })
       );
     });
