@@ -17,7 +17,7 @@ const {
   Material,
   Scene,
 } = tiny;
-
+const colors = {blue: hex_color("#00008B"), white: hex_color("#FFFFFF")}
 export class GameScene extends Scene {
   constructor() {
     // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -73,7 +73,25 @@ export class GameScene extends Scene {
     );
   }
 
-  right_scaling(context, program_state, barrier) {
+  color_algo(hex, i, j) {
+    let to_paint = colors.blue;
+    if (hex[i+1] != undefined && hex[i-1] != undefined) {
+      if(hex[i+1][j] == 0 || hex[i-1][j] == 0 && !(i == 0 && j == 0)) {
+        to_paint = colors.white;
+      }
+    }
+    if(hex[i][j+1] == 0 || hex[i][j-1] == 0) {
+      to_paint = colors.white;
+    }
+    if(i == 1 && j == 1) {
+      if((hex[i][j+1] && hex[i+1][j] && !hex[i+1][j+1]) || (hex[i][j-1] && hex[i+1][j] && !hex[i-1][j+1])) {
+        to_paint = colors.white;
+      }
+    }
+    return to_paint
+  }
+
+  wall_builder(context, program_state, barrier) {
     let x = (barrier.x - 1/3);
     let y = (barrier.y - 1/3);
     let z = barrier.z;
@@ -107,7 +125,6 @@ export class GameScene extends Scene {
       hex[2][0] = 1;
     }
 
-
     for (const i of Array(3).keys()) {
       let y_mod = 0.0;
       for(const j of Array(3).keys()) {
@@ -116,7 +133,7 @@ export class GameScene extends Scene {
             context,
             program_state,
             Mat4.translation((x + x_mod) * 2, (y + y_mod) * 2, z).times(Mat4.scale(1/3, 1/3, 1)),
-            this.materials.test.override({ color: barrier.hasBarrierAbove && barrier.hasBarrierBelow && barrier.hasBarrierLeft && barrier.hasBarrierRight ? hex_color("#FF0000") : hex_color("#ffffff") })
+            this.materials.test.override({color: this.color_algo(hex, i, j)})
           );
         }
         y_mod += 1/3;
@@ -181,7 +198,7 @@ export class GameScene extends Scene {
     });
 
     this.game.getBarriers().forEach((barrier) => {
-      this.right_scaling(context, program_state, barrier);
+      this.wall_builder(context, program_state, barrier);
     });
   }
 }
