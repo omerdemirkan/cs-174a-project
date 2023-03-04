@@ -1245,8 +1245,23 @@ const Movement_Controls =
       // this.key_triggered_button("Up", [" "], () => this.thrust[1] = 1, undefined, () => this.thrust[1] = 0);
       this.key_triggered_button(
         "Forward",
+        ["u"],
+        () => (this.thrust[2] = 1),
+        undefined,
+        () => (this.thrust[2] = 0)
+      );
+      this.key_triggered_button(
+        "Back",
+        ["o"],
+        () => (this.thrust[2] = -1),
+        undefined,
+        () => (this.thrust[2] = 0)
+      );
+      this.new_line();
+      this.key_triggered_button(
+        "Top",
         ["i"],
-        () => (this.thrust[1] = 1),
+        () => (this.thrust[1] = -1),
         undefined,
         () => (this.thrust[1] = 0)
       );
@@ -1259,9 +1274,9 @@ const Movement_Controls =
         () => (this.thrust[0] = 0)
       );
       this.key_triggered_button(
-        "Back",
+        "Down",
         ["k"],
-        () => (this.thrust[1] = -1),
+        () => (this.thrust[1] = 1),
         undefined,
         () => (this.thrust[1] = 0)
       );
@@ -1287,7 +1302,7 @@ const Movement_Controls =
       speed_controls.style.margin = "30px";
       this.key_triggered_button(
         "-",
-        ["o"],
+        ["["],
         () => (this.speed_multiplier /= 1.2),
         undefined,
         undefined,
@@ -1299,7 +1314,7 @@ const Movement_Controls =
       }, speed_controls);
       this.key_triggered_button(
         "+",
-        ["p"],
+        ["]"],
         () => (this.speed_multiplier *= 1.2),
         undefined,
         undefined,

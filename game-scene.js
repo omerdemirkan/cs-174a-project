@@ -39,8 +39,8 @@ export class GameScene extends Scene {
     };
 
     this.initial_camera_location = Mat4.look_at(
-      vec3(0, 0, 50),
-      vec3(0, 0, 0),
+      vec3(25, 15, 50),
+      vec3(25, 15, 0),
       vec3(0, 1, 0)
     );
     this.game = new Game();
@@ -73,7 +73,60 @@ export class GameScene extends Scene {
     );
   }
 
+  right_scaling(context, program_state, barrier) {
+    let x = (barrier.x - 1/3);
+    let y = (barrier.y - 1/3);
+    let z = barrier.z;
+    let x_mod = 0.0;
+    let hex = [[0,0,0],
+               [0,1,0],
+               [0,0,0]];
+    
+    if (barrier.hasBarrierAbove) {
+      hex[1][2] = 1;
+    }
+    if (barrier.hasBarrierRight) {
+      hex[2][1] = 1;
+    }
+    if (barrier.hasBarrierBelow) {
+      hex[1][0] = 1;
+    }
+    if (barrier.hasBarrierLeft) {
+      hex[0][1] = 1;
+    }
+    if (barrier.hasBarrierAboveLeft && barrier.hasBarrierAbove && barrier.hasBarrierLeft) {
+      hex[0][2] = 1;
+    }
+    if (barrier.hasBarrierBelowLeft && barrier.hasBarrierBelow && barrier.hasBarrierLeft) {
+      hex[0][0] = 1;
+    }
+    if (barrier.hasBarrierAboveRight && barrier.hasBarrierAbove && barrier.hasBarrierRight) {
+      hex[2][2] = 1;
+    }
+    if (barrier.hasBarrierBelowRight && barrier.hasBarrierBelow && barrier.hasBarrierRight) {
+      hex[2][0] = 1;
+    }
+
+
+    for (const i of Array(3).keys()) {
+      let y_mod = 0.0;
+      for(const j of Array(3).keys()) {
+        if (hex[i][j]) {
+          this.shapes.box.draw(
+            context,
+            program_state,
+            Mat4.translation((x + x_mod) * 2, (y + y_mod) * 2, z).times(Mat4.scale(1/3, 1/3, 1)),
+            this.materials.test.override({ color: barrier.hasBarrierAbove && barrier.hasBarrierBelow && barrier.hasBarrierLeft && barrier.hasBarrierRight ? hex_color("#FF0000") : hex_color("#ffffff") })
+          );
+        }
+        y_mod += 1/3;
+      }
+      x_mod += 1/3;
+    }
+  }
+
   display(context, program_state) {
+    super.display(context, program_state);
     // display():  Called once per frame of animation.
     // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
     if (!context.scratchpad.controls) {
@@ -113,7 +166,8 @@ export class GameScene extends Scene {
       this.materials.test.override({ color: yellow })
     );
 
-    this.game.getGhosts().forEach((ghost) => {
+    const colors = ["#FF0000", "#FFC0CB", "#0000FF", "#FFA500"]
+    this.game.getGhosts().forEach((ghost, index) => {
       this.shapes.box.draw(
         context,
         program_state,
@@ -122,17 +176,12 @@ export class GameScene extends Scene {
           ghost.position.y * 2,
           ghost.position.z * 2
         ),
-        this.materials.test.override({ color: yellow })
+        this.materials.test.override({ color: hex_color(colors[index]) })
       );
     });
 
     this.game.getBarriers().forEach((barrier) => {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2),
-        this.materials.test.override({ color: hex_color("#ffffff") })
-      );
+      this.right_scaling(context, program_state, barrier);
     });
   }
 }
