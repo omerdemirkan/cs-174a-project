@@ -108,6 +108,8 @@ export class GameScene extends Scene {
   }
 
   wall_builder(context, program_state, barrier) {
+    const startMs = Date.now();
+
     let x = barrier.x - 1 / 3;
     let y = barrier.y - 1 / 3;
     let z = barrier.z;
@@ -178,6 +180,8 @@ export class GameScene extends Scene {
       }
       x_mod += 1 / 3;
     }
+
+    const endMs = Date.now();
   }
 
   display(context, program_state) {
@@ -214,7 +218,7 @@ export class GameScene extends Scene {
       // Sorry for these magic numbers, they just seem to work with
       // the camera angle.
       this.currentCameraX + 12,
-      this.currentCameraY - 38,
+      this.currentCameraY - 35,
       50
     ).times(Mat4.rotation(0.7, 1, 0, 0));
 
@@ -241,7 +245,6 @@ export class GameScene extends Scene {
         new Light(ghost_light, hex_color(colors[index]), 50)
       );
     });
-    console.log(program_state.lights);
 
     // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
     const t = program_state.animation_time / 1000,
@@ -272,7 +275,30 @@ export class GameScene extends Scene {
     });
 
     this.game.getBarriers().forEach((barrier) => {
-      this.wall_builder(context, program_state, barrier);
+      // NOTE: This seemed to cause a pretty big performance hit.
+      // Let's troubleshoot it and re-introduce it. For now,
+      // I've replaced it with scaled down blocks.
+
+      // this.wall_builder(context, program_state, barrier);
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2).times(
+          Mat4.scale(1, 1, 0.1)
+        ),
+        this.materials.wall_mat
+      );
+    });
+
+    this.game.getPellets().forEach((pellet) => {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation(pellet.x * 2, pellet.y * 2, pellet.z * 2).times(
+          Mat4.scale(0.1, 0.1, 0.1)
+        ),
+        this.materials.ghost_mat
+      );
     });
   }
 }

@@ -8,6 +8,8 @@ export class Game {
     gravityAccelleration = -12,
     jumpInitialVelocity = 6,
     directionAnnealingSpeed = 0.2,
+    pelletOscillationSpeedMilliseconds = 2000,
+    pelletOscillationHeight = 0.1,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
 
@@ -26,6 +28,9 @@ export class Game {
     this._JUMP_INITIAL_VELOCITY = jumpInitialVelocity;
 
     this._DIRECTION_ANNEALING_SPEED = directionAnnealingSpeed;
+
+    this._PELLET_OSCILLATION_SPEED_MS = pelletOscillationSpeedMilliseconds;
+    this._PELLET_OSCILLATION_HEIGHT = pelletOscillationHeight;
 
     // Stores result of setInterval, which we need to
     // pass into clearInterval on pauseGame.
@@ -276,13 +281,24 @@ export class Game {
 
   getPellets = () => {
     const pellets = [];
+    const nowMs = Date.now();
     this._matrix.forEach((row, i) => {
       row.forEach((item, j) => {
         if (item === OBJECTS.PELLET) {
+          // evenly increases 0 to 1 then wraps back to 0.
+          const floatingState =
+            ((nowMs + i * 100 + j * 100) % this._PELLET_OSCILLATION_SPEED_MS) /
+            this._PELLET_OSCILLATION_SPEED_MS;
+
+          // oscillates between 0 and 1.
+          const oscillationState = Math.cos(floatingState * 2 * Math.PI);
+
           pellets.push({
             x: this._getXfromJ(j),
             y: this._getYfromI(i),
-            z: 0,
+            z:
+              this._PELLET_OSCILLATION_HEIGHT * oscillationState -
+              0.5 * this._PELLET_OSCILLATION_HEIGHT,
           });
         }
       });
@@ -489,7 +505,6 @@ const INITIAL_MATRIX = [
     OBJECTS.PELLET,
     OBJECTS.BARRIER,
   ],
-
   [
     OBJECTS.BARRIER,
     ...new Array(6).fill(OBJECTS.PELLET),
@@ -511,6 +526,206 @@ const INITIAL_MATRIX = [
     ...new Array(5).fill(OBJECTS.BARRIER),
     OBJECTS.PELLET,
     ...new Array(6).fill(OBJECTS.BARRIER),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(14).fill(OBJECTS.EMPTY),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(14).fill(OBJECTS.EMPTY),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(10).fill(OBJECTS.EMPTY),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(5).fill(OBJECTS.EMPTY),
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+    ...new Array(5).fill(OBJECTS.EMPTY),
+  ],
+  [
+    ...new Array(6).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(6).fill(OBJECTS.BARRIER),
+  ],
+  [
+    OBJECTS.BARRIER,
+    ...new Array(6).fill(OBJECTS.PELLET),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(4).fill(OBJECTS.PELLET),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(4).fill(OBJECTS.PELLET),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(6).fill(OBJECTS.PELLET),
+    OBJECTS.BARRIER,
+  ],
+  [
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(8).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+  ],
+  [OBJECTS.BARRIER, ...new Array(26).fill(OBJECTS.PELLET), OBJECTS.BARRIER],
+  [
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+  ],
+  [
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+  ],
+  [
+    OBJECTS.BARRIER,
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(5).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    ...new Array(4).fill(OBJECTS.BARRIER),
+    OBJECTS.PELLET,
+    OBJECTS.BARRIER,
+  ],
+  [
+    OBJECTS.BARRIER,
+    ...new Array(12).fill(OBJECTS.PELLET),
+    ...new Array(2).fill(OBJECTS.BARRIER),
+    ...new Array(12).fill(OBJECTS.PELLET),
+    OBJECTS.BARRIER,
   ],
   new Array(28).fill(OBJECTS.BARRIER),
 ];
