@@ -41,7 +41,6 @@ export class Game {
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
-
     // Reducing map size (hopefully temporary lol)
     this._matrix = this._matrix.filter(
       (row, i) => Math.abs(this._matrix.length - 2 * i) > 10
@@ -49,6 +48,8 @@ export class Game {
     this._matrix = this._matrix.map((row) =>
       row.filter((val, j) => Math.abs(row.length - 2 * j) > 10)
     );
+
+    this.barriermatrix = this.makeBarriersMatrix();
   }
 
   startGame = () => {
@@ -259,6 +260,10 @@ export class Game {
   };
 
   getBarriers = () => {
+    return this.barriermatrix;
+  };
+
+  makeBarriersMatrix = () => {
     const barriers = [];
     this._matrix.forEach((row, i) => {
       row.forEach((item, j) => {
