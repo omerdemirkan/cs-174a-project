@@ -56,7 +56,7 @@ export class GameScene extends Scene {
     this.game = new Game();
     this.barrierCubes = wall_cuber(this.game.getBarriers());
     this.colorCube = color_cube(this.barrierCubes);
-    console.log(this.colorCube)
+    console.log(this.colorCube);
     this.CAMERA_ANNEAL_SPEED = 0.1; // Lower = smoother camera movement
     this.PACMAN_CAMERA_WEIGHT = 0.3; // Lower = camera tracks pacman more.
   }
@@ -131,7 +131,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 0) * 2, (y + 1/3) * 2, z).times(
+        Mat4.translation((x + 0) * 2, (y + 1 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -143,7 +143,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 0) * 2, (y + 2/3) * 2, z).times(
+        Mat4.translation((x + 0) * 2, (y + 2 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -156,7 +156,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 1/3) * 2, (y + 0) * 2, z).times(
+        Mat4.translation((x + 1 / 3) * 2, (y + 0) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -168,7 +168,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 1/3) * 2, (y + 1/3) * 2, z).times(
+        Mat4.translation((x + 1 / 3) * 2, (y + 1 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -180,7 +180,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 1/3) * 2, (y + 2/3) * 2, z).times(
+        Mat4.translation((x + 1 / 3) * 2, (y + 2 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -193,7 +193,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 2/3) * 2, (y + 0) * 2, z).times(
+        Mat4.translation((x + 2 / 3) * 2, (y + 0) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -205,7 +205,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 2/3) * 2, (y + 1/3) * 2, z).times(
+        Mat4.translation((x + 2 / 3) * 2, (y + 1 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -217,7 +217,7 @@ export class GameScene extends Scene {
       this.shapes.box.draw(
         context,
         program_state,
-        Mat4.translation((x + 2/3) * 2, (y + 2/3) * 2, z).times(
+        Mat4.translation((x + 2 / 3) * 2, (y + 2 / 3) * 2, z).times(
           Mat4.scale(1 / 3, 1 / 3, 1)
         ),
         this.materials.wall_mat.override({
@@ -226,8 +226,8 @@ export class GameScene extends Scene {
       );
     }
 
-  const endMs = Date.now();
-  //console.log("Rendering Time: ", endMs - startMs, "Ms")
+    const endMs = Date.now();
+    //console.log("Rendering Time: ", endMs - startMs, "Ms")
   }
 
   display(context, program_state) {
@@ -263,9 +263,9 @@ export class GameScene extends Scene {
     const wsToEsTransformation = Mat4.translation(
       // Sorry for these magic numbers, they just seem to work with
       // the camera angle.
-      this.currentCameraX + 12,
-      this.currentCameraY - 35,
-      50
+      this.currentCameraX + 6,
+      this.currentCameraY - 15,
+      25
     ).times(Mat4.rotation(0.7, 1, 0, 0));
 
     program_state.set_camera(Mat4.inverse(wsToEsTransformation));
@@ -319,19 +319,12 @@ export class GameScene extends Scene {
         this.materials.ghost_mat.override({ color: hex_color(colors[index]) })
       );
     });
-    const startMs = Date.now();
     this.game.getBarriers().forEach((barrier, index) => {
       // NOTE: This seemed to cause a pretty big performance hit.
       // Let's troubleshoot it and re-introduce it. For now,
       // I've replaced it with scaled down blocks.
-      const startMs = Date.now();
       this.wall_builder(context, program_state, barrier, index);
-      const endMs = Date.now()
-      //console.log("Timetaken: ", endMs - startMs, "ms")
-      
     });
-    const endMs = Date.now()
-
 
     this.game.getPellets().forEach((pellet) => {
       this.shapes.box.draw(
@@ -347,7 +340,7 @@ export class GameScene extends Scene {
 }
 
 function wall_cuber(barriers) {
-  let barrierCubes = []
+  let barrierCubes = [];
   barriers.forEach((barrier) => {
     let hex = [
       [0, 0, 0],
@@ -394,22 +387,22 @@ function wall_cuber(barriers) {
     ) {
       hex[2][0] = 1;
     }
-    barrierCubes.push(hex)
-  })
+    barrierCubes.push(hex);
+  });
   return barrierCubes;
 }
 
 function color_cube(barrierCube) {
-  let color_cube = []
+  let color_cube = [];
   barrierCube.forEach((barrier) => {
     let hex = [
       [0, 0, 0],
       [0, 0, 0],
       [0, 0, 0],
-    ];  
+    ];
     for (const i of Array(3).keys()) {
       for (const j of Array(3).keys()) {
-        hex[i][j] = color_algo(barrier, i, j)
+        hex[i][j] = color_algo(barrier, i, j);
       }
     }
     color_cube.push(hex);
@@ -431,7 +424,7 @@ function color_algo(hex, i, j) {
     if (
       (hex[i][j + 1] && hex[i + 1][j] && !hex[i + 1][j + 1]) ||
       (hex[i][j - 1] && hex[i + 1][j] && !hex[i - 1][j + 1]) ||
-      (hex[i][j - 1] && hex[i - 1][j] && !hex[i - 1][j - 1]) || 
+      (hex[i][j - 1] && hex[i - 1][j] && !hex[i - 1][j - 1]) ||
       (hex[i][j - 1] && hex[i + 1][j] && !hex[i + 1][j - 1])
     ) {
       to_paint = colors.white;

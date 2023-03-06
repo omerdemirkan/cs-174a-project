@@ -41,7 +41,15 @@ export class Game {
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
-    this.barriermatrix = this.makeBarriersMatrix()
+    // Reducing map size (hopefully temporary lol)
+    this._matrix = this._matrix.filter(
+      (row, i) => Math.abs(this._matrix.length - 2 * i) > 10
+    );
+    this._matrix = this._matrix.map((row) =>
+      row.filter((val, j) => Math.abs(row.length - 2 * j) > 10)
+    );
+
+    this.barriermatrix = this.makeBarriersMatrix();
   }
 
   startGame = () => {
@@ -252,8 +260,8 @@ export class Game {
   };
 
   getBarriers = () => {
-    return this.barriermatrix
-  }
+    return this.barriermatrix;
+  };
 
   makeBarriersMatrix = () => {
     const barriers = [];
@@ -386,7 +394,7 @@ export class Game {
       {
         position: {
           i: 1,
-          j: 24,
+          j: 15,
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
@@ -394,8 +402,8 @@ export class Game {
       },
       {
         position: {
-          i: 1,
-          j: 24,
+          i: 15,
+          j: 1,
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
@@ -403,8 +411,8 @@ export class Game {
       },
       {
         position: {
-          i: 1,
-          j: 24,
+          i: 15,
+          j: 15,
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
@@ -412,8 +420,8 @@ export class Game {
       },
       {
         position: {
-          i: 1,
-          j: 24,
+          i: 6,
+          j: 6,
           z: 0,
         },
         movementDirection: DIRECTIONS.RIGHT,
