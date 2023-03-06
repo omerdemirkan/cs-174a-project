@@ -217,9 +217,9 @@ export class GameScene extends Scene {
     const wsToEsTransformation = Mat4.translation(
       // Sorry for these magic numbers, they just seem to work with
       // the camera angle.
-      this.currentCameraX + 12,
-      this.currentCameraY - 35,
-      50
+      this.currentCameraX + 6,
+      this.currentCameraY - 15,
+      25
     ).times(Mat4.rotation(0.7, 1, 0, 0));
 
     program_state.set_camera(Mat4.inverse(wsToEsTransformation));
@@ -279,15 +279,15 @@ export class GameScene extends Scene {
       // Let's troubleshoot it and re-introduce it. For now,
       // I've replaced it with scaled down blocks.
 
-      // this.wall_builder(context, program_state, barrier);
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2).times(
-          Mat4.scale(1, 1, 0.1)
-        ),
-        this.materials.wall_mat
-      );
+      this.wall_builder(context, program_state, barrier);
+      // this.shapes.box.draw(
+      //   context,
+      //   program_state,
+      //   Mat4.translation(barrier.x * 2, barrier.y * 2 - 1, barrier.z * 2).times(
+      //     Mat4.scale(1, 1, 0.1)
+      //   ),
+      //   this.materials.wall_mat
+      // );
     });
 
     this.game.getPellets().forEach((pellet) => {
