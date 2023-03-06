@@ -234,6 +234,28 @@ export class Game {
       // TODO: Update score after eating pellet
     }
 
+    // EATING UP POWER UPS
+    if (
+      this._matrix[Math.floor(this._pacman.position.i)]?.[
+        Math.floor(this._pacman.position.j)
+      ] === OBJECTS.POWER_UP
+    ) {
+      this._matrix[Math.floor(this._pacman.position.i)][
+        Math.floor(this._pacman.position.j)
+      ] = OBJECTS.EMPTY;
+      // TODO: Update score after eating pellet
+    }
+    if (
+      this._matrix[Math.ceil(this._pacman.position.i)]?.[
+        Math.ceil(this._pacman.position.j)
+      ] === OBJECTS.POWER_UP
+    ) {
+      this._matrix[Math.ceil(this._pacman.position.i)][
+        Math.ceil(this._pacman.position.j)
+      ] = OBJECTS.EMPTY;
+      // TODO: Update score after eating pellet
+    }
+
     // PACMAN-GHOST COLLISION DETECTION
     this._ghosts.forEach((ghost) => {
       const euclideanDistanceFromPacman = Math.sqrt(
@@ -317,6 +339,23 @@ export class Game {
       });
     });
     return pellets;
+  };
+
+  getPowerUps = () => {
+    const powerUps = [];
+    const nowMs = Date.now();
+    this._matrix.forEach((row, i) => {
+      row.forEach((item, j) => {
+        if (item === OBJECTS.POWER_UP) {
+          powerUps.push({
+            x: this._getXfromJ(j),
+            y: this._getYfromI(i),
+            z: 0,
+          });
+        }
+      });
+    });
+    return powerUps;
   };
 
   getPacman = () => {
@@ -452,7 +491,8 @@ const INITIAL_MATRIX = [
     OBJECTS.BARRIER,
     ...new Array(12).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(12).fill(OBJECTS.PELLET),
+    ...new Array(11).fill(OBJECTS.PELLET),
+    OBJECTS.POWER_UP,
     OBJECTS.BARRIER,
   ],
   [
@@ -735,9 +775,11 @@ const INITIAL_MATRIX = [
   ],
   [
     OBJECTS.BARRIER,
-    ...new Array(12).fill(OBJECTS.PELLET),
+    OBJECTS.POWER_UP,
+    ...new Array(11).fill(OBJECTS.PELLET),
     ...new Array(2).fill(OBJECTS.BARRIER),
-    ...new Array(12).fill(OBJECTS.PELLET),
+    ...new Array(11).fill(OBJECTS.PELLET),
+    OBJECTS.POWER_UP,
     OBJECTS.BARRIER,
   ],
   new Array(28).fill(OBJECTS.BARRIER),

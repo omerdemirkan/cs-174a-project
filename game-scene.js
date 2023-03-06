@@ -327,11 +327,22 @@ export class GameScene extends Scene {
     });
 
     this.game.getPellets().forEach((pellet) => {
-      this.shapes.box.draw(
+      this.shapes.sphere.draw(
         context,
         program_state,
         Mat4.translation(pellet.x * 2, pellet.y * 2, pellet.z * 2).times(
           Mat4.scale(0.1, 0.1, 0.1)
+        ),
+        this.materials.ghost_mat
+      );
+    });
+
+    this.game.getPowerUps().forEach((powerUp) => {
+      this.shapes.sphere.draw(
+        context,
+        program_state,
+        Mat4.translation(powerUp.x * 2, powerUp.y * 2, powerUp.z * 2).times(
+          Mat4.scale(0.5, 0.5, 0.5)
         ),
         this.materials.ghost_mat
       );
