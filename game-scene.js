@@ -54,7 +54,9 @@ export class GameScene extends Scene {
       vec3(0, 1, 0)
     );
     this.game = new Game();
-
+    this.barrierCubes = wall_cuber(this.game.getBarriers());
+    this.colorCube = color_cube(this.barrierCubes);
+    console.log(this.colorCube)
     this.CAMERA_ANNEAL_SPEED = 0.1; // Lower = smoother camera movement
     this.PACMAN_CAMERA_WEIGHT = 0.3; // Lower = camera tracks pacman more.
   }
@@ -107,81 +109,125 @@ export class GameScene extends Scene {
     return to_paint;
   }
 
-  wall_builder(context, program_state, barrier) {
+  wall_builder(context, program_state, barrier, index) {
     const startMs = Date.now();
 
     let x = barrier.x - 1 / 3;
     let y = barrier.y - 1 / 3;
     let z = barrier.z;
-    let x_mod = 0.0;
-    let hex = [
-      [0, 0, 0],
-      [0, 1, 0],
-      [0, 0, 0],
-    ];
-
-    if (barrier.hasBarrierAbove) {
-      hex[1][2] = 1;
+    if (this.barrierCubes[index][0][0]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 0) * 2, (y + 0) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][0][0],
+        })
+      );
     }
-    if (barrier.hasBarrierRight) {
-      hex[2][1] = 1;
+    if (this.barrierCubes[index][0][1]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 0) * 2, (y + 1/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][0][1],
+        })
+      );
     }
-    if (barrier.hasBarrierBelow) {
-      hex[1][0] = 1;
-    }
-    if (barrier.hasBarrierLeft) {
-      hex[0][1] = 1;
-    }
-    if (
-      barrier.hasBarrierAboveLeft &&
-      barrier.hasBarrierAbove &&
-      barrier.hasBarrierLeft
-    ) {
-      hex[0][2] = 1;
-    }
-    if (
-      barrier.hasBarrierBelowLeft &&
-      barrier.hasBarrierBelow &&
-      barrier.hasBarrierLeft
-    ) {
-      hex[0][0] = 1;
-    }
-    if (
-      barrier.hasBarrierAboveRight &&
-      barrier.hasBarrierAbove &&
-      barrier.hasBarrierRight
-    ) {
-      hex[2][2] = 1;
-    }
-    if (
-      barrier.hasBarrierBelowRight &&
-      barrier.hasBarrierBelow &&
-      barrier.hasBarrierRight
-    ) {
-      hex[2][0] = 1;
+    if (this.barrierCubes[index][0][2]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 0) * 2, (y + 2/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][0][2],
+        })
+      );
     }
 
-    for (const i of Array(3).keys()) {
-      let y_mod = 0.0;
-      for (const j of Array(3).keys()) {
-        if (hex[i][j]) {
-          this.shapes.box.draw(
-            context,
-            program_state,
-            Mat4.translation((x + x_mod) * 2, (y + y_mod) * 2, z).times(
-              Mat4.scale(1 / 3, 1 / 3, 1)
-            ),
-            this.materials.wall_mat.override({
-              color: this.color_algo(hex, i, j),
-            })
-          );
-        }
-        y_mod += 1 / 3;
-      }
-      x_mod += 1 / 3;
+    if (this.barrierCubes[index][1][0]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 1/3) * 2, (y + 0) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][1][0],
+        })
+      );
+    }
+    if (this.barrierCubes[index][1][1]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 1/3) * 2, (y + 1/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][1][1],
+        })
+      );
+    }
+    if (this.barrierCubes[index][1][2]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 1/3) * 2, (y + 2/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][1][2],
+        })
+      );
     }
 
-    const endMs = Date.now();
+    if (this.barrierCubes[index][2][0]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 2/3) * 2, (y + 0) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][2][0],
+        })
+      );
+    }
+    if (this.barrierCubes[index][2][1]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 2/3) * 2, (y + 1/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][2][1],
+        })
+      );
+    }
+    if (this.barrierCubes[index][2][2]) {
+      this.shapes.box.draw(
+        context,
+        program_state,
+        Mat4.translation((x + 2/3) * 2, (y + 2/3) * 2, z).times(
+          Mat4.scale(1 / 3, 1 / 3, 1)
+        ),
+        this.materials.wall_mat.override({
+          color: this.colorCube[index][2][2],
+        })
+      );
+    }
+
+  const endMs = Date.now();
+  //console.log("Rendering Time: ", endMs - startMs, "Ms")
   }
 
   display(context, program_state) {
@@ -273,22 +319,19 @@ export class GameScene extends Scene {
         this.materials.ghost_mat.override({ color: hex_color(colors[index]) })
       );
     });
-
-    this.game.getBarriers().forEach((barrier) => {
+    const startMs = Date.now();
+    this.game.getBarriers().forEach((barrier, index) => {
       // NOTE: This seemed to cause a pretty big performance hit.
       // Let's troubleshoot it and re-introduce it. For now,
       // I've replaced it with scaled down blocks.
-
-      // this.wall_builder(context, program_state, barrier);
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation(barrier.x * 2, barrier.y * 2, barrier.z * 2).times(
-          Mat4.scale(1, 1, 0.1)
-        ),
-        this.materials.wall_mat
-      );
+      const startMs = Date.now();
+      this.wall_builder(context, program_state, barrier, index);
+      const endMs = Date.now()
+      //console.log("Timetaken: ", endMs - startMs, "ms")
+      
     });
+    const endMs = Date.now()
+
 
     this.game.getPellets().forEach((pellet) => {
       this.shapes.box.draw(
@@ -301,4 +344,98 @@ export class GameScene extends Scene {
       );
     });
   }
+}
+
+function wall_cuber(barriers) {
+  let barrierCubes = []
+  barriers.forEach((barrier) => {
+    let hex = [
+      [0, 0, 0],
+      [0, 1, 0],
+      [0, 0, 0],
+    ];
+    if (barrier.hasBarrierAbove) {
+      hex[1][2] = 1;
+    }
+    if (barrier.hasBarrierRight) {
+      hex[2][1] = 1;
+    }
+    if (barrier.hasBarrierBelow) {
+      hex[1][0] = 1;
+    }
+    if (barrier.hasBarrierLeft) {
+      hex[0][1] = 1;
+    }
+    if (
+      barrier.hasBarrierAboveLeft &&
+      barrier.hasBarrierAbove &&
+      barrier.hasBarrierLeft
+    ) {
+      hex[0][2] = 1;
+    }
+    if (
+      barrier.hasBarrierBelowLeft &&
+      barrier.hasBarrierBelow &&
+      barrier.hasBarrierLeft
+    ) {
+      hex[0][0] = 1;
+    }
+    if (
+      barrier.hasBarrierAboveRight &&
+      barrier.hasBarrierAbove &&
+      barrier.hasBarrierRight
+    ) {
+      hex[2][2] = 1;
+    }
+    if (
+      barrier.hasBarrierBelowRight &&
+      barrier.hasBarrierBelow &&
+      barrier.hasBarrierRight
+    ) {
+      hex[2][0] = 1;
+    }
+    barrierCubes.push(hex)
+  })
+  return barrierCubes;
+}
+
+function color_cube(barrierCube) {
+  let color_cube = []
+  barrierCube.forEach((barrier) => {
+    let hex = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ];  
+    for (const i of Array(3).keys()) {
+      for (const j of Array(3).keys()) {
+        hex[i][j] = color_algo(barrier, i, j)
+      }
+    }
+    color_cube.push(hex);
+  });
+  return color_cube;
+}
+
+function color_algo(hex, i, j) {
+  let to_paint = colors.blue;
+  if (hex[i + 1] != undefined && hex[i - 1] != undefined) {
+    if (hex[i + 1][j] == 0 || (hex[i - 1][j] == 0 && !(i == 0 && j == 0))) {
+      to_paint = colors.white;
+    }
+  }
+  if (hex[i][j + 1] == 0 || hex[i][j - 1] == 0) {
+    to_paint = colors.white;
+  }
+  if (i == 1 && j == 1) {
+    if (
+      (hex[i][j + 1] && hex[i + 1][j] && !hex[i + 1][j + 1]) ||
+      (hex[i][j - 1] && hex[i + 1][j] && !hex[i - 1][j + 1]) ||
+      (hex[i][j - 1] && hex[i - 1][j] && !hex[i - 1][j - 1]) || 
+      (hex[i][j - 1] && hex[i + 1][j] && !hex[i + 1][j - 1])
+    ) {
+      to_paint = colors.white;
+    }
+  }
+  return to_paint;
 }
