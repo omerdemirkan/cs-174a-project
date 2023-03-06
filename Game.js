@@ -10,12 +10,14 @@ export class Game {
     directionAnnealingSpeed = 0.2,
     pelletOscillationSpeedMilliseconds = 2000,
     pelletOscillationHeight = 0.1,
+    pacmanOnSmokeDurationMilliseconds = 10_000,
   } = {}) {
     this._GAME_STATE_REFRESH_MS = 1000 * (1 / gameStateRefreshRate);
 
     const pacmanBlocksPerMillisecond = pacmanBlocksPerSecondSpeed / 1000;
     this._PACMAN_MOVEMENT_PER_REFRESH =
       pacmanBlocksPerMillisecond * this._GAME_STATE_REFRESH_MS;
+    this._PACMAN_ON_SMOKE_DURATION_MS = pacmanOnSmokeDurationMilliseconds;
 
     const ghostBlocksPerMillisecond = ghostBlocksPerSecondSpeed / 1000;
     this._GHOST_MOVEMENT_PER_REFRESH =
@@ -36,8 +38,8 @@ export class Game {
     // pass into clearInterval on pauseGame.
     this._interval = null;
 
-    this._placePacmanInStartingPosition();
-    this._placeGhostsInStartingPosition();
+    this._pacman = this._getInitialPacmanValue();
+    this._ghosts = this._getInitialGhostValues();
 
     // Creating a copy to avoid polluting it for a given game
     this._matrix = INITIAL_MATRIX.map((row) => [...row]);
@@ -135,6 +137,10 @@ export class Game {
 
   _handleRefresh = () => {
     // UPDATING PACMAN XY POSITION
+    this._pacman.isOnSmoke =
+      Date.now() - this._pacman.lastPowerUpEatenMillisecond <
+      this._PACMAN_ON_SMOKE_DURATION_MS;
+    console.log(this._pacman.lastPowerUpEatenMillisecond);
 
     const [nextPosition, nextDirection] =
       this._getEntityUpdatedXYPositionAndDirection({
@@ -243,6 +249,9 @@ export class Game {
       this._matrix[Math.floor(this._pacman.position.i)][
         Math.floor(this._pacman.position.j)
       ] = OBJECTS.EMPTY;
+      this._pacman.lastPowerUpEatenMillisecond = Date.now();
+      console.log(this._pacman.lastPowerUpEatenMillisecond);
+
       // TODO: Update score after eating pellet
     }
     if (
@@ -253,11 +262,14 @@ export class Game {
       this._matrix[Math.ceil(this._pacman.position.i)][
         Math.ceil(this._pacman.position.j)
       ] = OBJECTS.EMPTY;
+
+      this._pacman.lastPowerUpEatenMillisecond = Date.now();
+      console.log(this._pacman.lastPowerUpEatenMillisecond);
       // TODO: Update score after eating pellet
     }
 
     // PACMAN-GHOST COLLISION DETECTION
-    this._ghosts.forEach((ghost) => {
+    this._ghosts.forEach((ghost, i) => {
       const euclideanDistanceFromPacman = Math.sqrt(
         Math.pow(ghost.position.i - this._pacman.position.i, 2) +
           Math.pow(ghost.position.j - this._pacman.position.j, 2) +
@@ -266,9 +278,11 @@ export class Game {
       const isColliding =
         euclideanDistanceFromPacman <=
         this._PACMAN_HITBOX_RADIUS + this._GHOST_HITBOX_RADIUS;
-      if (isColliding) {
-        this._placePacmanInStartingPosition();
-        this._placeGhostsInStartingPosition();
+      if (isColliding && !this._pacman.isOnSmoke) {
+        this._pacman = this._getInitialPacmanValue();
+        this._ghosts = this._getInitialGhostValues();
+      } else if (isColliding && this._pacman.isOnSmoke) {
+        this._ghosts[i] = this._getInitialGhostValues()[i];
       }
     });
   };
@@ -408,8 +422,8 @@ export class Game {
     }
   };
 
-  _placePacmanInStartingPosition = () => {
-    this._pacman = {
+  _getInitialPacmanValue = () => {
+    return {
       position: {
         i: 1,
         j: 1,
@@ -419,6 +433,8 @@ export class Game {
       movementDirection: DIRECTIONS.NONE,
       intendedDirection: DIRECTIONS.NONE,
       rotationAngleInRadians: DIRECTIONS.RIGHT.rotationAngleInRadians,
+      lastPowerUpEatenMillisecond: 0,
+      isOnSmoke: false,
     };
   };
 
@@ -428,8 +444,8 @@ export class Game {
     }
   };
 
-  _placeGhostsInStartingPosition = () => {
-    this._ghosts = [
+  _getInitialGhostValues = () => {
+    return [
       {
         position: {
           i: 1,
