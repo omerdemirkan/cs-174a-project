@@ -16,10 +16,10 @@ const {
   Shape,
   Material,
   Scene,
-  Texture
+  Texture,
 } = tiny;
 
-const {Textured_Phong, Shape_From_File} = defs;
+const { Textured_Phong, Shape_From_File } = defs;
 
 const colors = { blue: hex_color("#00008B"), white: hex_color("#FFFFFF") };
 export class GameScene extends Scene {
@@ -55,21 +55,20 @@ export class GameScene extends Scene {
 
       pac0: new Material(new Textured_Phong(), {
         color: hex_color("#000000"),
-        ambient: 1, 
-        texture: new Texture("assets/pac0.png", "LINEAR_MIPMAP_LINEAR")
+        ambient: 1,
+        texture: new Texture("assets/pac0.png", "LINEAR_MIPMAP_LINEAR"),
       }),
       pac1: new Material(new Textured_Phong(), {
-          color: hex_color("#000000"),
-          ambient: 1, 
-          texture: new Texture("assets/pac1.png", "LINEAR_MIPMAP_LINEAR")
+        color: hex_color("#000000"),
+        ambient: 1,
+        texture: new Texture("assets/pac1.png", "LINEAR_MIPMAP_LINEAR"),
       }),
 
       // ghost_pink: new Material(new Textured_Phong(), {
       //     color: hex_color("#000000"),
-      //     ambient: 1, 
+      //     ambient: 1,
       //     texture: new Texture("assets/ghost_pink.jpg", "LINEAR_MIPMAP_LINEAR")
       // }),
-      
     };
 
     this.initial_camera_location = Mat4.look_at(
@@ -320,36 +319,38 @@ export class GameScene extends Scene {
     const t = program_state.animation_time / 1000,
       dt = program_state.animation_delta_time / 1000;
 
-      // var ghost_transform = model_transform;
-      // ghost_transform = ghost_transform.times(Mat4.translation(0, Math.sin(t)/1.5, 0, 0)).times(Mat4.translation(2, 0, 0, 0)).times(Mat4.scale(0.5, 0.5, 0.5, 0));
-      // this.shapes.ghost.draw(context, program_state, ghost_transform, this.materials.ghost_blue);
+    // var ghost_transform = model_transform;
+    // ghost_transform = ghost_transform.times(Mat4.translation(0, Math.sin(t)/1.5, 0, 0)).times(Mat4.translation(2, 0, 0, 0)).times(Mat4.scale(0.5, 0.5, 0.5, 0));
+    // this.shapes.ghost.draw(context, program_state, ghost_transform, this.materials.ghost_blue);
 
-    if(Math.floor(t%2)==0){
-        this.shapes.pacman.draw(context, program_state, Mat4.translation(
+    const PACMAN_CHOMPS_PER_SECOND = 2;
+
+    if ((t * PACMAN_CHOMPS_PER_SECOND) % 1 < 0.5) {
+      this.shapes.pacman.draw(
+        context,
+        program_state,
+        Mat4.translation(
           playerState.position.x * 2,
           playerState.position.y * 2,
           playerState.position.z * 2
-        ).times(Mat4.rotation(1, 1, 0, 0)), this.materials.pac0);
-    }
-    else if (Math.floor(t%2)==1){
-        this.shapes.pacman.draw(context, program_state, Mat4.translation(
+        ).times(Mat4.rotation(1, 1, 0, 0)),
+        this.materials.pac0
+      );
+    } else {
+      this.shapes.pacman.draw(
+        context,
+        program_state,
+        Mat4.translation(
           playerState.position.x * 2,
           playerState.position.y * 2,
           playerState.position.z * 2
-        ).times(Mat4.rotation(1, 1, 0, 0)), this.materials.pac1);
+        )
+          .times(Mat4.rotation(playerState.rotationAngleInRadians, 0, 0, 1))
+          .times(Mat4.rotation(Math.PI / 2, 0, 0, -1))
+          .times(Mat4.rotation(Math.PI / 2, 1, 0, 0)),
+        this.materials.pac1
+      );
     }
-
-      
-    // this.shapes.box.draw(
-    //   context,
-    //   program_state,
-    //   Mat4.translation(
-    //     playerState.position.x * 2,
-    //     playerState.position.y * 2,
-    //     playerState.position.z * 2
-    //   ).times(Mat4.rotation(playerState.rotationAngleInRadians, 0, 0, 1)),
-    //   this.materials.pacman_mat.override({ color: yellow })
-    // );
 
     this.game.getGhosts().forEach((ghost, index) => {
       this.shapes.ghost.draw(
@@ -359,7 +360,10 @@ export class GameScene extends Scene {
           ghost.position.x * 2,
           ghost.position.y * 2,
           ghost.position.z * 2
-        ).times(Mat4.rotation(1, 1, 0, 0)).times(Mat4.translation(0, Math.sin(t)/1.5, 0, 0)).times(Mat4.scale(0.7, 0.7, 0.7, 0)),
+        )
+          .times(Mat4.translation(0, Math.sin(t) / 1.5, 0, 0))
+          .times(Mat4.rotation(1, 1, 0, 0))
+          .times(Mat4.scale(0.7, 0.7, 0.7, 0)),
         this.materials.ghost_mat.override({ color: hex_color(colors[index]) })
       );
     });
