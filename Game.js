@@ -140,7 +140,7 @@ export class Game {
     this._pacman.isOnSmoke =
       Date.now() - this._pacman.lastPowerUpEatenMillisecond <
       this._PACMAN_ON_SMOKE_DURATION_MS;
-    console.log(this._pacman.lastPowerUpEatenMillisecond);
+    //console.log(this._pacman.lastPowerUpEatenMillisecond);
 
     const [nextPosition, nextDirection] =
       this._getEntityUpdatedXYPositionAndDirection({
@@ -250,7 +250,7 @@ export class Game {
         Math.floor(this._pacman.position.j)
       ] = OBJECTS.EMPTY;
       this._pacman.lastPowerUpEatenMillisecond = Date.now();
-      console.log(this._pacman.lastPowerUpEatenMillisecond);
+      //console.log(this._pacman.lastPowerUpEatenMillisecond);
 
       // TODO: Update score after eating pellet
     }
@@ -264,7 +264,7 @@ export class Game {
       ] = OBJECTS.EMPTY;
 
       this._pacman.lastPowerUpEatenMillisecond = Date.now();
-      console.log(this._pacman.lastPowerUpEatenMillisecond);
+      //console.log(this._pacman.lastPowerUpEatenMillisecond);
       // TODO: Update score after eating pellet
     }
 

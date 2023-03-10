@@ -38,37 +38,41 @@ export class GameScene extends Scene {
     // *** Materials
     this.materials = {
       wall_mat: new Material(new defs.Phong_Shader(5), {
-        ambient: 0.25,
-        diffusivity: 0.5,
-        color: hex_color("#ffffff"),
-      }),
-      pacman_mat: new Material(new defs.Phong_Shader(5), {
         ambient: 0.5,
-        diffusivity: 0.5,
+        diffusivity: 0,
         color: hex_color("#ffffff"),
       }),
       ghost_mat: new Material(new defs.Phong_Shader(5), {
         ambient: 1,
         diffusivity: 0,
+        specularity: 0,
         color: hex_color("#ffffff"),
       }),
 
       pac0: new Material(new Textured_Phong(), {
-        color: hex_color("#000000"),
-        ambient: 1,
+        ambient: 0.75,
         texture: new Texture("assets/pac0.png", "LINEAR_MIPMAP_LINEAR"),
       }),
       pac1: new Material(new Textured_Phong(), {
-        color: hex_color("#000000"),
-        ambient: 1,
+        ambient: 0.75,
         texture: new Texture("assets/pac1.png", "LINEAR_MIPMAP_LINEAR"),
       }),
 
-      // ghost_pink: new Material(new Textured_Phong(), {
-      //     color: hex_color("#000000"),
-      //     ambient: 1,
-      //     texture: new Texture("assets/ghost_pink.jpg", "LINEAR_MIPMAP_LINEAR")
-      // }),
+      center_rail: new Material(new defs.Fake_Bump_Map(5), {
+          ambient: 0.3, diffusivity: 1, specularity: 1, texture: new Texture("assets/cubeshade.png", "LINEAR_MIPMAP_LINEAR")
+      }),
+
+      monolith: new Material(new defs.Fake_Bump_Map(5), {
+        ambient: 0.3, diffusivity: 1, specularity: 1, texture: new Texture("assets/cubeshade_circ.png", "LINEAR_MIPMAP_LINEAR")
+    }),
+
+      center_rail_rot: new Material(new defs.Fake_Bump_Map(5), {
+        ambient: 0.3, diffusivity: 1, specularity: 1, texture: new Texture("assets/cubeshade_rot.png", "LINEAR_MIPMAP_LINEAR")
+    }),
+    
+    max_hex: new Material(new defs.Phong_Shader(), {
+      ambient: 0, diffusivity: 0, specularity: 0, texture: new Texture("assets/floormap.png", "LINEAR_MIPMAP_LINEAR")
+    })
     };
 
     this.initial_camera_location = Mat4.look_at(
@@ -134,119 +138,45 @@ export class GameScene extends Scene {
 
   wall_builder(context, program_state, barrier, index) {
     const startMs = Date.now();
-
+    let t = program_state.animation_time / 1000
     let x = barrier.x - 1 / 3;
     let y = barrier.y - 1 / 3;
     let z = barrier.z;
-    if (this.barrierCubes[index][0][0]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 0) * 2, (y + 0) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][0][0],
-        })
-      );
-    }
-    if (this.barrierCubes[index][0][1]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 0) * 2, (y + 1 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][0][1],
-        })
-      );
-    }
-    if (this.barrierCubes[index][0][2]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 0) * 2, (y + 2 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][0][2],
-        })
-      );
-    }
+    let x_mod = 0.0;
+    for (const i of Array(3).keys()) {
+      let y_mod = 0.0;
+      for (const j of Array(3).keys()) {
+        if (this.barrierCubes[index][i][j]) {
+          let mat_shad = this.materials.monolith.override({
+            color: color(Math.sin(t + Math.PI), Math.cos(t), Math.sin(t), 1)
+          })
+          if (this.colorCube[index][i][j] == colors.white) {
+            mat_shad = this.materials.center_rail.override({
+            })
+            if (this.barrierCubes[index][i][0] && 
+                this.barrierCubes[index][i][1] &&
+                this.barrierCubes[index][i][2]) {
+                  mat_shad = this.materials.center_rail_rot
+            }
 
-    if (this.barrierCubes[index][1][0]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 1 / 3) * 2, (y + 0) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][1][0],
-        })
-      );
-    }
-    if (this.barrierCubes[index][1][1]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 1 / 3) * 2, (y + 1 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][1][1],
-        })
-      );
-    }
-    if (this.barrierCubes[index][1][2]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 1 / 3) * 2, (y + 2 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][1][2],
-        })
-      );
-    }
-
-    if (this.barrierCubes[index][2][0]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 2 / 3) * 2, (y + 0) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][2][0],
-        })
-      );
-    }
-    if (this.barrierCubes[index][2][1]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 2 / 3) * 2, (y + 1 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][2][1],
-        })
-      );
-    }
-    if (this.barrierCubes[index][2][2]) {
-      this.shapes.box.draw(
-        context,
-        program_state,
-        Mat4.translation((x + 2 / 3) * 2, (y + 2 / 3) * 2, z).times(
-          Mat4.scale(1 / 3, 1 / 3, 1)
-        ),
-        this.materials.wall_mat.override({
-          color: this.colorCube[index][2][2],
-        })
-      );
+            if (i == 1 && j == 0 || j == 2) {
+              if(this.colorCube[index][i][1] == colors.white) {
+                mat_shad = this.materials.center_rail_rot
+              }
+            }
+          }
+          this.shapes.box.draw(
+            context,
+            program_state,
+            Mat4.translation((x + x_mod) * 2, (y + y_mod) * 2, z).times(
+              Mat4.scale(1 / 3, 1 / 3, this.colorCube[index][i][j] == colors.white ? 1 : 1 + Math.abs(Math.sin(t + x + y)))
+            ),
+            mat_shad
+          );
+        }
+        y_mod += 1 / 3;
+      }
+      x_mod += 1 / 3;
     }
 
     const endMs = Date.now();
@@ -301,8 +231,14 @@ export class GameScene extends Scene {
       playerState.position.z * 2,
       1
     );
+    let playerIllum = null
+    if (playerState.isOnSmoke) {
+      playerIllum = new Light(player_light, yellow, 500)
+    } else {
+      playerIllum = new Light(player_light, yellow, 50)
+    }
     // The parameters of the Light are: position, color, size
-    program_state.lights = [new Light(player_light, yellow, 50)];
+    program_state.lights = [playerIllum];
     this.game.getGhosts().forEach((ghost, index) => {
       let ghost_light = vec4(
         ghost.position.x * 2,
@@ -334,7 +270,8 @@ export class GameScene extends Scene {
           playerState.position.y * 2,
           playerState.position.z * 2
         ).times(Mat4.rotation(1, 1, 0, 0)),
-        this.materials.pac0
+        this.materials.pac0.override({ambient: Date.now() - playerState.lastPowerUpEatenMillisecond <
+          this.game._PACMAN_ON_SMOKE_DURATION_MS - 1500 ? 1 :  0.75})
       );
     } else {
       this.shapes.pacman.draw(
@@ -348,7 +285,7 @@ export class GameScene extends Scene {
           .times(Mat4.rotation(playerState.rotationAngleInRadians, 0, 0, 1))
           .times(Mat4.rotation(Math.PI / 2, 0, 0, -1))
           .times(Mat4.rotation(Math.PI / 2, 1, 0, 0)),
-        this.materials.pac1
+        this.materials.pac1.override({ambient: playerState.isOnSmoke ? 1 :  0.75})
       );
     }
 
@@ -385,6 +322,14 @@ export class GameScene extends Scene {
       );
     });
 
+    // floor
+    this.shapes.box.draw(
+      context,
+      program_state,
+      Mat4.translation(8 * 2, 8 * 2, -1).times(Mat4.scale(17,17,0)),
+      this.materials.max_hex
+    );   
+
     this.game.getPowerUps().forEach((powerUp) => {
       this.shapes.sphere.draw(
         context,
@@ -392,9 +337,10 @@ export class GameScene extends Scene {
         Mat4.translation(powerUp.x * 2, powerUp.y * 2, powerUp.z * 2).times(
           Mat4.scale(0.5, 0.5, 0.5)
         ),
-        this.materials.ghost_mat
+        this.materials.ghost_mat.override({color: color(0.5 * Math.sin(t) + 1, 0.5 * Math.sin(t) + 1, 0, 1)})
       );
     });
+ 
   }
 }
 
@@ -490,4 +436,13 @@ function color_algo(hex, i, j) {
     }
   }
   return to_paint;
+}
+
+function is_between(lower, upper, n) {
+  if (n < lower) {
+    return lower
+  } else if (n > upper) {
+    return upper
+  }
+  return n
 }
