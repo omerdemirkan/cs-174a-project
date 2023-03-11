@@ -51,10 +51,12 @@ export class GameScene extends Scene {
 
       pac0: new Material(new Textured_Phong(), {
         ambient: 0.75,
+        specularity: 0,
         texture: new Texture("assets/pac0.png", "LINEAR_MIPMAP_LINEAR"),
       }),
       pac1: new Material(new Textured_Phong(), {
         ambient: 0.75,
+        specularity: 0,
         texture: new Texture("assets/pac1.png", "LINEAR_MIPMAP_LINEAR"),
       }),
 
@@ -64,15 +66,28 @@ export class GameScene extends Scene {
 
       monolith: new Material(new defs.Fake_Bump_Map(5), {
         ambient: 0.3, diffusivity: 1, specularity: 1, texture: new Texture("assets/cubeshade_circ.png", "LINEAR_MIPMAP_LINEAR")
-    }),
+      }),
 
       center_rail_rot: new Material(new defs.Fake_Bump_Map(5), {
         ambient: 0.3, diffusivity: 1, specularity: 1, texture: new Texture("assets/cubeshade_rot.png", "LINEAR_MIPMAP_LINEAR")
-    }),
+      }),
     
-    max_hex: new Material(new defs.Phong_Shader(), {
-      ambient: 0, diffusivity: 0, specularity: 0, texture: new Texture("assets/floormap.png", "LINEAR_MIPMAP_LINEAR")
-    })
+      wall_floor: new Material(new defs.Fake_Bump_Map(5), {
+        ambient: 0.1, diffusivity: 0.5, specularity: 0.3, texture: new Texture("assets/scaled_walls.png", "LINEAR_MIPMAP_LINEAR")
+      }),
+
+      trail: new Material(new defs.Fake_Bump_Map(5), {
+        ambient: 0, diffusivity: 1, specularity: 1, texture: new Texture("assets/glow_trail.png", "LINEAR_MIPMAP_LINEAR"),
+        color: color(1,1,1,1)
+      }),
+
+      trail_floors: new Material(new Textured_Phong(5), {
+        ambient: 0.25, diffusivity:0, specularity:0, texture: new Texture("assets/floors.png", "LINEAR_MIPMAP_LINEAR")
+      }),
+
+      white: new Material(new Textured_Phong(5), {
+        ambient: 0.2, diffusivity: 0.5, specularity: 0, texture: new Texture("assets/whitemap.png")
+      })
     };
 
     this.initial_camera_location = Mat4.look_at(
@@ -326,9 +341,27 @@ export class GameScene extends Scene {
     this.shapes.box.draw(
       context,
       program_state,
-      Mat4.translation(8 * 2, 8 * 2, -1).times(Mat4.scale(17,17,0)),
-      this.materials.max_hex
-    );   
+      Mat4.translation(8 * 2, 8 * 2, -1.3).times(Mat4.scale(17,17,0.001)),
+      this.materials.white.override({color: color(0.75, 0.75, 0.75, 1)})
+    );
+    this.shapes.box.draw(
+      context,
+      program_state,
+      Mat4.translation(8 * 2, 8 * 2, -1.1).times(Mat4.scale(17,17,0.001)),
+      this.materials.trail_floors.override({ color: color(Math.sin(t + Math.PI), Math.cos(t), Math.sin(t), 0.5)})
+    );
+    this.shapes.box.draw(
+      context,
+      program_state,
+      Mat4.translation(8 * 2, 8 * 2, -1).times(Mat4.scale(17,17,0.001)),
+      this.materials.wall_floor
+    );
+    this.shapes.box.draw(
+      context,
+      program_state,
+      Mat4.translation(8 * 2, 8 * 2, -1).times(Mat4.scale(17,17,0.001)),
+      this.materials.trail
+    );
 
     this.game.getPowerUps().forEach((powerUp) => {
       this.shapes.sphere.draw(
