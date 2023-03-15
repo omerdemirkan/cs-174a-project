@@ -43,10 +43,10 @@ export class GameScene extends Scene {
         color: hex_color("#ffffff"),
       }),
       ghost_mat: new Material(new Cartoon_Phong(5), {
-        ambient: 1,
+        ambient: 0.45,
         diffusivity: 0,
         specularity: 0,
-        color: hex_color("#ffffff"),
+        texture: new Texture("assets/whitemap.png"),
       }),
 
       pac0: new Material(new Cartoon_Phong(), {
@@ -72,7 +72,7 @@ export class GameScene extends Scene {
         diffusivity: 1,
         specularity: 1,
         texture: new Texture(
-          "assets/cubeshade_circ.png",
+          "assets/cubemap.png",
           "LINEAR_MIPMAP_LINEAR"
         ),
       }),
@@ -110,6 +110,13 @@ export class GameScene extends Scene {
       }),
 
       white: new Material(new Textured_Phong(5), {
+        ambient: 0.2,
+        diffusivity: 0.5,
+        specularity: 0,
+        texture: new Texture("assets/whitemap.png"),
+      }),
+
+      cartoon_white: new Material(new Cartoon_Phong(5), {
         ambient: 0.2,
         diffusivity: 0.5,
         specularity: 0,
@@ -344,22 +351,6 @@ export class GameScene extends Scene {
         })
       );
     }
-
-    this.game.getGhosts().forEach((ghost, index) => {
-      this.shapes.ghost.draw(
-        context,
-        program_state,
-        Mat4.translation(
-          ghost.position.x * 2,
-          ghost.position.y * 2,
-          ghost.position.z * 2
-        )
-          .times(Mat4.translation(0, Math.sin(t) / 1.5, 0, 0))
-          .times(Mat4.rotation(1, 1, 0, 0))
-          .times(Mat4.scale(0.7, 0.7, 0.7, 0)),
-        this.materials.ghost_mat.override({ color: hex_color(colors[index]) })
-      );
-    });
     this.game.getBarriers().forEach((barrier, index) => {
       // NOTE: This seemed to cause a pretty big performance hit.
       // Let's troubleshoot it and re-introduce it. For now,
@@ -374,7 +365,7 @@ export class GameScene extends Scene {
         Mat4.translation(pellet.x * 2, pellet.y * 2, pellet.z * 2).times(
           Mat4.scale(0.1, 0.1, 0.1)
         ),
-        this.materials.ghost_mat
+        this.materials.cartoon_white.override({ambient: 1})
       );
     });
 
@@ -413,9 +404,25 @@ export class GameScene extends Scene {
         Mat4.translation(powerUp.x * 2, powerUp.y * 2, powerUp.z * 2).times(
           Mat4.scale(0.5, 0.5, 0.5)
         ),
-        this.materials.ghost_mat.override({
+        this.materials.cartoon_white.override({
           color: color(0.5 * Math.sin(t) + 1, 0.5 * Math.sin(t) + 1, 0, 1),
         })
+      );
+    });
+
+    this.game.getGhosts().forEach((ghost, index) => {
+      this.shapes.ghost.draw(
+        context,
+        program_state,
+        Mat4.translation(
+          ghost.position.x * 2,
+          ghost.position.y * 2,
+          ghost.position.z * 2
+        )
+          .times(Mat4.translation(0, Math.sin(t) / 1.5, 0, 0))
+          .times(Mat4.rotation(1, 1, 0, 0))
+          .times(Mat4.scale(0.7, 0.7, 0.7, 0)),
+        this.materials.ghost_mat.override({ color: hex_color(colors[index], 0.75) })
       );
     });
   }
