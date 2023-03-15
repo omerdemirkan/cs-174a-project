@@ -536,6 +536,7 @@ class Cartoon_Phong extends defs.Phong_Shader {
                 varying vec2 f_tex_coord;
                 varying vec3 view_position_screen_space;
                 attribute vec3 position, normal;                            
+                varying vec3 norm;
                 // Position is expressed in object coordinates.
                 attribute vec2 texture_coord;
                 
@@ -550,6 +551,7 @@ class Cartoon_Phong extends defs.Phong_Shader {
                     vertex_worldspace = ( model_transform * vec4( position, 1.0 ) ).xyz;
                     // Turn the per-vertex texture coordinate into an interpolated variable.
                     f_tex_coord = texture_coord;
+                    norm = normal;
                   } `
     );
   }
@@ -562,6 +564,7 @@ class Cartoon_Phong extends defs.Phong_Shader {
       this.shared_glsl_code() +
       `
                 varying vec2 f_tex_coord;
+                varying vec3 norm;
                 uniform sampler2D texture;
                 uniform vec3 view_position;
                 uniform mat4 model_transform;
@@ -576,8 +579,8 @@ class Cartoon_Phong extends defs.Phong_Shader {
                     gl_FragColor.xyz += phong_model_lights( normalize( N ), vertex_worldspace );
                     
                     vec3 fragment_normal = normalize(N);
-                    vec3 view_direction = normalize(view_position - gl_FragCoord.xyz);
-                    if (dot(fragment_normal, view_direction) < 0.1) {
+                    vec3 view_direction = normalize(camera_center - vertex_worldspace);
+                    if (dot(fragment_normal, view_direction) < 0.4) {
                       gl_FragColor.xyz = vec3(0, 0, 0);
                     }
                   } `
